@@ -14,6 +14,7 @@ Progressive loader. Read this file first, then load only the sub-skill relevant 
 | Exchange listing | Jupiter routing, Birdeye, DexScreener, CoinGecko/CMC, CEX tier strategy | `listing-strategy.md` |
 | Legal | Howey analysis, SAFTs, jurisdiction matrix, OFAC screening, KYC flows | `legal-compliance.md` |
 | Post-launch | Holder growth, whale alerts, sell pressure, LP health, buy/sell flow analysis | `post-launch-monitoring.md` |
+| Protocol economics | Fee modeling, emission simulation, token sink design, incentive stress-testing | `protocol-economics.md` |
 
 ## Cross-cutting context (always keep in mind)
 
