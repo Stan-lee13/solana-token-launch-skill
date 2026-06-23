@@ -152,3 +152,445 @@ RED FLAGS DETECTED:
 RECOMMENDATIONS:
 [Specific actionable items]
 ```
+
+---
+
+## Step 4 — Vesting Contract Deployment (Streamflow)
+
+Do not manually manage vesting. Use Streamflow — the Solana standard for on-chain vesting.
+
+```typescript
+// scripts/deploy-vesting.ts
+import { StreamflowSolana, getBN } from "@streamflow/stream";
+import { Keypair, Connection } from "@solana/web3.js";
+import * as anchor from "@coral-xyz/anchor";
+
+const client = new StreamflowSolana.SolanaStreamClient(
+  "https://mainnet.helius-rpc.com/?api-key=YOUR_KEY"
+);
+
+interface VestingRecipient {
+  name: string;
+  wallet: string;
+  totalTokens: number;
+}
+
+async function deployVestingBatch(
+  recipients: VestingRecipient[],
+  vestingType: "team" | "investor" | "advisor",
+  tokenMint: string,
+  payer: Keypair
+) {
+  const DECIMALS = 9;
+
+  // Vesting schedules by type
+  const SCHEDULES = {
+    team: {
+      cliffMonths: 12,
+      vestMonths: 36,
+      releaseFrequency: 30 * 24 * 3600, // monthly
+    },
+    investor: {
+      cliffMonths: 6,
+      vestMonths: 24,
+      releaseFrequency: 30 * 24 * 3600,
+    },
+    advisor: {
+      cliffMonths: 6,
+      vestMonths: 24,
+      releaseFrequency: 90 * 24 * 3600, // quarterly
+    },
+  };
+
+  const schedule = SCHEDULES[vestingType];
+  const now = Math.floor(Date.now() / 1000);
+  const cliffTime = now + schedule.cliffMonths * 30 * 24 * 3600;
+
+  const streams = recipients.map((r) => ({
+    recipient: r.wallet,
+    amount: getBN(r.totalTokens, DECIMALS),
+    name: `${r.name} — ${vestingType} vesting`,
+    cliffAmount: getBN(0, DECIMALS), // 0 at cliff, linear only
+    amountPerPeriod: getBN(
+      r.totalTokens / schedule.vestMonths,
+      DECIMALS
+    ),
+    period: schedule.releaseFrequency,
+    cliff: cliffTime,
+    cancelableBySender: false, // Once deployed, team can't cancel unilaterally
+    cancelableByRecipient: false,
+    transferableBySender: false,
+    transferableByRecipient: false,
+    canTopup: false,
+    start: cliffTime,
+    mint: tokenMint,
+    partner: null,
+  }));
+
+  console.log(`Deploying ${streams.length} ${vestingType} vesting contracts...`);
+
+  const results = [];
+  for (const stream of streams) {
+    try {
+      const { tx, id } = await client.create(
+        {
+          sender: payer,
+          ...stream,
+        },
+        { commitment: "confirmed" }
+      );
+      results.push({ recipient: stream.recipient, streamId: id, tx });
+      console.log(`✅ ${stream.name}: ${id}`);
+    } catch (e) {
+      console.error(`❌ Failed for ${stream.recipient}:`, e);
+    }
+  }
+
+  // Output stream IDs for public disclosure
+  console.log("\n=== PUBLISH THESE STREAM IDS ===");
+  results.forEach((r) =>
+    console.log(`${r.recipient}: https://app.streamflow.finance/contract/solana/mainnet/${r.streamId}`)
+  );
+
+  return results;
+}
+```
+
+---
+
+## Step 5 — Token Sink Implementations
+
+Every token emission needs a sink. Here are the three most effective patterns with actual code.
+
+### Sink 1: Protocol Fee Buy-Back-and-Burn
+
+```rust
+// programs/protocol/src/instructions/execute_buyback.rs
+// Triggered by a keeper (cron job or Clockwork thread)
+
+use anchor_lang::prelude::*;
+use anchor_spl::token::{self, Burn, Token, TokenAccount, Mint};
+
+#[derive(Accounts)]
+pub struct ExecuteBuyback<'info> {
+    #[account(mut, constraint = fee_vault.amount >= MIN_BUYBACK_THRESHOLD @ ProtocolError::InsufficientFees)]
+    pub fee_vault: Account<'info, TokenAccount>,
+    #[account(mut)]
+    pub protocol_token_mint: Account<'info, Mint>,
+    #[account(mut)]
+    pub purchased_token_account: Account<'info, TokenAccount>,
+    pub token_program: Program<'info, Token>,
+}
+
+const MIN_BUYBACK_THRESHOLD: u64 = 1_000_000_000; // 1,000 USDC
+
+pub fn execute_buyback(ctx: Context<ExecuteBuyback>) -> Result<()> {
+    // 1. Swap fee_vault → protocol tokens via Jupiter CPI (omitted for brevity)
+    // 2. Burn all purchased tokens
+    let burn_amount = ctx.accounts.purchased_token_account.amount;
+    let cpi_ctx = CpiContext::new(
+        ctx.accounts.token_program.to_account_info(),
+        Burn {
+            mint: ctx.accounts.protocol_token_mint.to_account_info(),
+            from: ctx.accounts.purchased_token_account.to_account_info(),
+            authority: ctx.accounts.purchased_token_account.to_account_info(),
+        },
+    );
+    token::burn(cpi_ctx, burn_amount)?;
+
+    emit!(BuybackExecuted {
+        fee_amount: ctx.accounts.fee_vault.amount,
+        tokens_burned: burn_amount,
+        timestamp: Clock::get()?.unix_timestamp,
+    });
+    Ok(())
+}
+```
+
+### Sink 2: Staking Lock (Emission Control)
+
+```rust
+#[account]
+pub struct StakePosition {
+    pub owner: Pubkey,
+    pub amount: u64,
+    pub lock_until: i64,   // Unix timestamp
+    pub lock_tier: u8,     // 0=30d, 1=90d, 2=180d, 3=365d
+    pub multiplier: u16,   // Reward multiplier (100 = 1x, 200 = 2x)
+}
+
+// Multiplier table — longer locks = higher rewards
+pub fn get_multiplier(lock_tier: u8) -> u16 {
+    match lock_tier {
+        0 => 100,  // 30 days  → 1.0x
+        1 => 140,  // 90 days  → 1.4x
+        2 => 200,  // 180 days → 2.0x
+        3 => 300,  // 365 days → 3.0x
+        _ => 100,
+    }
+}
+```
+
+### Sink 3: Points-to-Token Migration (2026 Standard Pattern)
+
+The dominant TGE pattern in 2026: protocols run a points program for 6-12 months, then convert points to tokens at TGE. This is now the expected playbook.
+
+```typescript
+// scripts/points-to-token-conversion.ts
+// Run at TGE to convert your off-chain points DB to on-chain token claims
+
+import { createMerkleTree, getMerkleProof } from "@solana/spl-account-compression";
+import * as crypto from "crypto";
+
+interface PointsRecord {
+  wallet: string;
+  points: number;
+}
+
+interface TokenAllocation {
+  wallet: string;
+  points: number;
+  tokenAmount: bigint; // in base units
+}
+
+async function computeConversion(
+  pointsData: PointsRecord[],
+  totalTokensForAirdrop: bigint,
+  DECIMALS: number = 9
+): Promise<TokenAllocation[]> {
+  const totalPoints = pointsData.reduce((sum, r) => sum + r.points, 0);
+
+  // Anti-whale cap: no single wallet gets more than 1% of airdrop allocation
+  const MAX_WALLET_PCT = 0.01;
+  const maxPerWallet = Number(totalTokensForAirdrop) * MAX_WALLET_PCT;
+
+  const rawAllocations = pointsData.map((r) => ({
+    wallet: r.wallet,
+    points: r.points,
+    raw: (r.points / totalPoints) * Number(totalTokensForAirdrop),
+  }));
+
+  // Apply cap and redistribute excess to smaller holders
+  const capped = rawAllocations.map((a) => ({
+    ...a,
+    capped: Math.min(a.raw, maxPerWallet),
+    excess: Math.max(0, a.raw - maxPerWallet),
+  }));
+
+  const totalExcess = capped.reduce((s, a) => s + a.excess, 0);
+  const belowCapCount = capped.filter((a) => a.raw < maxPerWallet).length;
+  const redistPerWallet = belowCapCount > 0 ? totalExcess / belowCapCount : 0;
+
+  return capped.map((a) => ({
+    wallet: a.wallet,
+    points: a.points,
+    tokenAmount: BigInt(
+      Math.floor(a.capped + (a.raw < maxPerWallet ? redistPerWallet : 0))
+    ),
+  }));
+}
+
+// Build the Merkle tree for on-chain claim verification
+function buildMerkleTree(allocations: TokenAllocation[]): {
+  root: Buffer;
+  proofs: Map<string, Buffer[]>;
+} {
+  const leaves = allocations.map((a) => {
+    // Each leaf: hash(wallet || amount)
+    return crypto
+      .createHash("sha256")
+      .update(Buffer.concat([
+        Buffer.from(a.wallet),
+        Buffer.from(a.tokenAmount.toString()),
+      ]))
+      .digest();
+  });
+
+  // Build tree bottom-up
+  const tree: Buffer[][] = [leaves];
+  let currentLevel = leaves;
+
+  while (currentLevel.length > 1) {
+    const nextLevel: Buffer[] = [];
+    for (let i = 0; i < currentLevel.length; i += 2) {
+      const left = currentLevel[i];
+      const right = i + 1 < currentLevel.length ? currentLevel[i + 1] : left;
+      nextLevel.push(
+        crypto
+          .createHash("sha256")
+          .update(Buffer.concat([left, right]))
+          .digest()
+      );
+    }
+    tree.push(nextLevel);
+    currentLevel = nextLevel;
+  }
+
+  const root = currentLevel[0];
+
+  // Generate proofs for each wallet
+  const proofs = new Map<string, Buffer[]>();
+  allocations.forEach((a, index) => {
+    const proof: Buffer[] = [];
+    let idx = index;
+    for (let level = 0; level < tree.length - 1; level++) {
+      const sibling =
+        idx % 2 === 0
+          ? tree[level][idx + 1] ?? tree[level][idx]
+          : tree[level][idx - 1];
+      proof.push(sibling);
+      idx = Math.floor(idx / 2);
+    }
+    proofs.set(a.wallet, proof);
+  });
+
+  return { root, proofs };
+}
+```
+
+**On-chain claim program (Anchor):**
+
+```rust
+// The Merkle distributor — standard pattern for airdrop claims
+#[program]
+pub mod merkle_distributor {
+    use super::*;
+
+    pub fn claim(
+        ctx: Context<Claim>,
+        index: u64,
+        amount: u64,
+        proof: Vec<[u8; 32]>,
+    ) -> Result<()> {
+        let distributor = &ctx.accounts.distributor;
+        let claim_status = &mut ctx.accounts.claim_status;
+
+        require!(!claim_status.is_claimed, DistributorError::AlreadyClaimed);
+
+        // Verify Merkle proof
+        let node = anchor_lang::solana_program::keccak::hashv(&[
+            &index.to_le_bytes(),
+            ctx.accounts.claimant.key.as_ref(),
+            &amount.to_le_bytes(),
+        ]);
+
+        require!(
+            verify_proof(proof, distributor.root, node.0),
+            DistributorError::InvalidProof
+        );
+
+        // Mark as claimed (PDA prevents double-claim)
+        claim_status.is_claimed = true;
+        claim_status.claimant = ctx.accounts.claimant.key();
+        claim_status.claimed_at = Clock::get()?.unix_timestamp;
+
+        // Transfer tokens
+        let seeds = &[b"distributor".as_ref(), &[distributor.bump]];
+        token::transfer(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                token::Transfer {
+                    from: ctx.accounts.from.to_account_info(),
+                    to: ctx.accounts.to.to_account_info(),
+                    authority: distributor.to_account_info(),
+                },
+                &[seeds],
+            ),
+            amount,
+        )?;
+
+        emit!(Claimed { index, claimant: ctx.accounts.claimant.key(), amount });
+        Ok(())
+    }
+}
+```
+
+---
+
+## Step 6 — Death Spiral Early Warning System
+
+A token death spiral has specific measurable signatures. Detect them before they're fatal.
+
+```typescript
+// scripts/health/death-spiral-detector.ts
+interface TokenHealthMetrics {
+  price24hChangePct: number;
+  volume24h: number;
+  marketCap: number;
+  liquidityTVL: number;
+  holderCount: number;
+  holderCountChange7d: number;  // Positive = growing, negative = leaving
+  buyVsSellRatio: number;       // <1 = more sells than buys
+  emissionRate30d: number;      // Tokens emitted in last 30 days
+  buybackBurn30d: number;       // Tokens burned via buyback in last 30 days
+}
+
+function detectDeathSpiral(metrics: TokenHealthMetrics): {
+  riskLevel: "SAFE" | "WATCH" | "DANGER" | "SPIRAL";
+  signals: string[];
+  recommendedActions: string[];
+} {
+  const signals: string[] = [];
+  let riskScore = 0;
+
+  // Signal 1: Price declining + volume declining (not just a correction)
+  if (metrics.price24hChangePct < -10 && metrics.volume24h < metrics.marketCap * 0.03) {
+    signals.push("Price -10%+ with low volume — not a healthy correction");
+    riskScore += 2;
+  }
+
+  // Signal 2: Liquidity being removed (LPs exiting before token holders)
+  if (metrics.liquidityTVL < metrics.marketCap * 0.05) {
+    signals.push(`Liquidity/MCap ratio ${(metrics.liquidityTVL / metrics.marketCap * 100).toFixed(1)}% — dangerously thin`);
+    riskScore += 3;
+  }
+
+  // Signal 3: Holders leaving
+  if (metrics.holderCountChange7d < -0.05 * metrics.holderCount) {
+    signals.push(`Holder count fell ${Math.abs(metrics.holderCountChange7d)} in 7 days`);
+    riskScore += 2;
+  }
+
+  // Signal 4: Emissions outpacing demand
+  const netEmission = metrics.emissionRate30d - metrics.buybackBurn30d;
+  if (netEmission > metrics.marketCap * 0.1) {
+    signals.push(`Net emission ${(netEmission / metrics.marketCap * 100).toFixed(0)}% of MCap in 30 days — too inflationary`);
+    riskScore += 3;
+  }
+
+  // Signal 5: Sustained sell pressure
+  if (metrics.buyVsSellRatio < 0.7) {
+    signals.push(`Buy/sell ratio ${metrics.buyVsSellRatio.toFixed(2)} — heavy sell pressure`);
+    riskScore += 2;
+  }
+
+  const riskLevel =
+    riskScore >= 8 ? "SPIRAL" :
+    riskScore >= 5 ? "DANGER" :
+    riskScore >= 2 ? "WATCH"  : "SAFE";
+
+  const actions: Record<string, string[]> = {
+    SPIRAL: [
+      "EMERGENCY: Pause new emissions immediately",
+      "Execute buyback from treasury — even 1-2% of supply makes a signal",
+      "Convene team + investors — do NOT respond emotionally on social",
+      "Prepare community update: acknowledge the metrics, show the plan",
+      "Consider temporary LP deepening to reduce price impact",
+    ],
+    DANGER: [
+      "Increase buyback rate from protocol fees",
+      "Delay any planned unlock events by 30 days minimum",
+      "Run community AMA within 48h — visibility reduces panic",
+      "Review emissions schedule — can you reduce without governance?",
+    ],
+    WATCH: [
+      "Increase monitoring frequency to hourly",
+      "Prepare buyback trigger if ratio drops further",
+      "Review upcoming unlock calendar for next 30 days",
+    ],
+    SAFE: ["Normal operations. Review weekly."],
+  };
+
+  return { riskLevel, signals, recommendedActions: actions[riskLevel] };
+}
+```

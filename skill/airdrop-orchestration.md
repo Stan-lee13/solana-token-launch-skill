@@ -194,3 +194,196 @@ TGE+24h:   Publish full recipient list on Arweave (transparency signal)
 TGE+14d:   Reminder to unclaimed wallets via protocol notification
 T-clawback-7: Final reminder, claims close in 7 days
 ```
+
+---
+
+## Phased Airdrop Strategy (Prevent Day-1 Dump)
+
+Never distribute all airdrop tokens at once. Phased distribution reduces sell pressure and extends community engagement.
+
+```
+Phase 1 (TGE Day 0): 25% of total airdrop
+  → Immediate claimers. Accept some sell pressure. Price discovery.
+  
+Phase 2 (Day 30): 25%
+  → Users who are still holding or interacting with protocol
+  → Bonus: extra 5% if they completed at least 3 protocol actions post-TGE
+  
+Phase 3 (Day 90): 25%
+  → Loyal holders. Run a snapshot — anyone who sold >50% of Phase 1 gets reduced Phase 3.
+  
+Phase 4 (Day 180): 25%
+  → Long-term community. Can be redirected to governance incentives if better use emerges.
+```
+
+**On-chain enforcement:** Deploy a separate distributor for each phase with a different Merkle root. Phase 2+ roots are set via multisig governance after re-scoring wallets.
+
+---
+
+## Merkle Distributor Claim UI
+
+```tsx
+// components/AirdropClaim.tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { Program, AnchorProvider } from "@coral-xyz/anchor";
+
+interface ClaimStatus {
+  eligible: boolean;
+  amount: bigint;
+  proof: string[];
+  alreadyClaimed: boolean;
+}
+
+export function AirdropClaim({ distributorAddress }: { distributorAddress: string }) {
+  const { publicKey, signTransaction, connected } = useWallet();
+  const [status, setStatus] = useState<ClaimStatus | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [txSig, setTxSig] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!publicKey) return;
+    fetchEligibility(publicKey.toBase58());
+  }, [publicKey]);
+
+  async function fetchEligibility(wallet: string) {
+    // Your API endpoint that checks eligibility + returns Merkle proof
+    const res = await fetch(`/api/airdrop/eligibility?wallet=${wallet}`);
+    if (res.ok) {
+      setStatus(await res.json());
+    } else {
+      setStatus({ eligible: false, amount: 0n, proof: [], alreadyClaimed: false });
+    }
+  }
+
+  async function handleClaim() {
+    if (!publicKey || !signTransaction || !status?.eligible) return;
+    setClaiming(true);
+    setError(null);
+
+    try {
+      // Fetch unsigned claim transaction from your backend
+      const res = await fetch("/api/airdrop/claim-tx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wallet: publicKey.toBase58(),
+          distributorAddress,
+        }),
+      });
+
+      const { transaction: txBase64 } = await res.json();
+      const tx = Transaction.from(Buffer.from(txBase64, "base64"));
+      const signed = await signTransaction(tx);
+
+      const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL!);
+      const sig = await connection.sendRawTransaction(signed.serialize());
+      await connection.confirmTransaction(sig, "confirmed");
+
+      setTxSig(sig);
+    } catch (e: any) {
+      setError(e.message ?? "Claim failed");
+    } finally {
+      setClaiming(false);
+    }
+  }
+
+  if (!connected) {
+    return (
+      <div className="rounded-lg border bg-card p-6 text-center">
+        <p className="text-muted-foreground">Connect your wallet to check eligibility</p>
+      </div>
+    );
+  }
+
+  if (txSig) {
+    return (
+      <div className="rounded-lg border bg-card p-6 space-y-2">
+        <p className="font-semibold text-emerald-500">✅ Claimed successfully</p>
+        <a
+          href={`https://solscan.io/tx/${txSig}`}
+          target="_blank"
+          className="text-sm text-muted-foreground underline"
+        >
+          View on Solscan
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border bg-card p-6 space-y-4">
+      <h2 className="font-semibold text-foreground">Token Airdrop</h2>
+
+      {status === null && (
+        <p className="text-muted-foreground text-sm">Checking eligibility…</p>
+      )}
+
+      {status && !status.eligible && (
+        <p className="text-muted-foreground text-sm">
+          This wallet is not eligible for the airdrop.
+        </p>
+      )}
+
+      {status?.alreadyClaimed && (
+        <p className="text-muted-foreground text-sm">
+          You have already claimed your tokens.
+        </p>
+      )}
+
+      {status?.eligible && !status.alreadyClaimed && (
+        <>
+          <div className="rounded-md bg-muted/50 p-4">
+            <p className="text-sm text-muted-foreground">Your allocation</p>
+            <p className="text-2xl font-bold text-foreground">
+              {(Number(status.amount) / 1e9).toLocaleString()} tokens
+            </p>
+          </div>
+          <button
+            onClick={handleClaim}
+            disabled={claiming}
+            className="w-full rounded-md bg-primary text-primary-foreground py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+          >
+            {claiming ? "Claiming…" : "Claim Tokens"}
+          </button>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## Retroactive Snapshot Timing Strategy
+
+When and how you take the snapshot materially affects quality.
+
+```
+TIMING RULES:
+  ❌ Announce snapshot date in advance → farmers flood in the week before
+  ✅ Take snapshot secretly, announce AFTER it was already taken
+  ✅ Use a snapshot from 30-90 days in the past (eliminates farming entirely)
+
+SNAPSHOT DELAY PATTERN (used by major 2025-2026 launches):
+  1. Protocol operates for 6+ months, no snapshot date announced
+  2. Internal team takes snapshot at an undisclosed past block
+  3. Announce TGE: "Snapshot was already taken at block [X] on [DATE]"
+  4. Reveal criteria: "Users with activity between [DATE_A] and [DATE_B] qualify"
+  
+  Result: Zero farming is possible — the window is already closed.
+
+MULTIPLE SNAPSHOT APPROACH:
+  Take 3-5 snapshots at random points. Use the INTERSECTION or WEIGHTED AVERAGE.
+  Eliminates burst farmers who were active for 2 weeks around a predicted date.
+
+BLOCK TO USE:
+  - Pick a block 48+ hours before your snapshot announcement
+  - Verify it's not a high-activity block (avoid end of month, major protocol events)
+  - Document the exact block number — publish after announcement
+```

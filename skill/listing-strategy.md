@@ -155,3 +155,140 @@ T+1hr:    Community announcement with how-to-buy guide
 T+4hr:    First volume/holder milestone tweet
 T+24hr:   Daily update: volume, holders, LP stats
 ```
+
+---
+
+## CEX Tier Breakdown (2026)
+
+Not all CEX listings are equal. Apply effort proportional to the realistic outcome.
+
+```
+TIER 1 — Binance, Coinbase, OKX, Bybit
+  Minimum requirements:
+    - $500K+ average daily volume on DEX for 90 days
+    - $50M+ FDV
+    - Full KYB (Know Your Business) documentation
+    - Legal opinion letter from recognized firm
+    - Security audit from Tier 1 firm (Trail of Bits, OtterSec, Halborn)
+    - No regulatory actions or OFAC connections
+    - Active legal entity in accepted jurisdiction
+  Timeline: 3-6 months from application to listing
+  Listing fee: $0 official (Binance/CB), but marketing/MM commitments required
+  What they actually want: Volume, users, regulatory clarity, reputational safety
+  
+TIER 2 — Kraken, KuCoin, Gate.io, MEXC, Bitget
+  Minimum requirements:
+    - $100K+ average daily volume for 30 days
+    - $5M+ FDV
+    - Standard KYB documentation
+    - Security audit (reputable firm)
+    - Working product with active users
+  Timeline: 2-8 weeks
+  Listing fee: Varies ($0–$100K depending on exchange; Gate/MEXC often charge)
+  What they actually want: Volume guarantees, marketing spend, community size
+
+TIER 3 — MEXC, LBank, BitMart, XT.com, Phemex
+  Minimum requirements:
+    - Active trading on DEX
+    - Basic KYB
+    - Community size (usually >5K followers minimum)
+  Timeline: Days to weeks
+  Listing fee: Often $5K–$50K (consider whether worth it)
+  Warning: Low-tier CEX listings often add no value — DEX volume beats MEXC volume
+            for price discovery. Don't pay for prestige you won't get.
+```
+
+---
+
+## CEX Application Template
+
+Use this structure when applying to Tier 2+ exchanges:
+
+```markdown
+# Token Listing Application — [YOUR TOKEN NAME]
+
+## Project Overview
+- Protocol name: 
+- Token ticker:
+- Token mint address (Solana):
+- Website: 
+- Whitepaper/documentation:
+- Launch date:
+
+## Token Economics
+- Total supply:
+- Circulating supply at time of application:
+- FDV at current price:
+- Market cap:
+- Vesting summary: (team, investors, unlock schedule)
+
+## Traction Metrics
+- 30-day DEX volume: $[X] (primary source: Birdeye/DexScreener links)
+- 24h volume:
+- Total unique holders:
+- Protocol TVL (if applicable):
+- Monthly active users:
+- Growth rate (month-over-month):
+
+## Security
+- Audit firm + report link:
+- Bug bounty program:
+- Multi-sig authority:
+
+## Legal
+- Legal entity:
+- Jurisdiction:
+- Legal opinion letter: [yes/no + firm name]
+- OFAC/sanctions screening: confirmed
+
+## Market Making
+- Current market makers:
+- Spread commitment: <[X]%
+- Liquidity depth commitment: $[X] at ±2%
+
+## Community
+- X/Twitter followers:
+- Discord members:
+- Telegram members:
+- Notable backers/investors:
+
+## Why List Now
+[2-3 sentences. Specific metrics. No hype.]
+```
+
+---
+
+## Market Maker Firm Selection
+
+When evaluating MM firms, ask these specific questions. Red flags in brackets.
+
+```
+REQUIRED QUESTIONS:
+1. "What is your minimum loan amount and what collateral do we provide?"
+   [Red flag: loan >20% of total supply OR no clear collateral terms]
+
+2. "What are your uptime and spread SLAs? What happens if you breach them?"
+   [Red flag: no SLAs or "best effort" language]
+
+3. "Can you provide references from 3 protocols you currently market-make for?"
+   [Red flag: refusal or only anonymous references]
+
+4. "What happens to loaned tokens if your firm has a financial problem?"
+   [Red flag: unclear custody or tokens held on centralized exchange]
+
+5. "Do you engage in any directional trading with our tokens?"
+   [Red flag: yes, or evasive answer — MM should be neutral]
+
+6. "What is the exit clause and notice period?"
+   [Red flag: notice period <30 days or exit triggers that benefit the MM]
+
+REPUTABLE FIRMS (2026):
+  - Wintermute: Industry standard. Institutional grade. Requires larger tokens.
+  - Keyrock: Strong for Solana ecosystems. Transparent SLAs.
+  - GSR: Institutional, strong CEX relationships.
+  - Kairon Labs: Mid-tier, works with smaller launches.
+  - Flowdesk: European-focused, MiCA-compliant.
+  
+  Self-MM alternative: Meteora DLMM rebalancing cron (see market-making.md)
+  — Only viable if <$5M FDV. Above that, professional MM is cheaper than the spread loss.
+```
