@@ -1,55 +1,115 @@
+name: solana-token-launch
+description: End-to-end TGE coordination for Solana protocols — tokenomics design, token creation, airdrop orchestration, liquidity seeding, market making, listing strategy, post-launch monitoring, and death spiral prevention.
+user-invocable: true
+cross-domain: true
+
 # Solana Token Launch Skill
 
-A complete Token Generation Event (TGE) playbook for Solana — from token creation through exchange listing, market making, airdrop orchestration, and post-launch monitoring.
+> Progressive loader — route to the correct sub-skill based on where you are in the launch lifecycle.
+> Do not load all files at once — each is large and task-specific.
 
-## When to load this skill
+## Extends
 
-Load this skill when the user needs to:
-- Create a Token-2022 (Token Extensions) token
-- Design tokenomics and vesting schedules
-- Plan and execute an airdrop
-- Seed liquidity on Meteora / Orca / Raydium
-- Set up market making (self or professional)
-- Get listed on Jupiter, Birdeye, DexScreener, CoinGecko
-- Navigate legal and compliance requirements
-- Monitor token health post-launch
+- [solana-dev-skill](https://github.com/solana-foundation/solana-dev-skill) — Core Solana development
 
-## Sub-skill routing
+## Cross-Domain Integration Points
 
-Load the specific sub-skill file based on the user's current stage:
+This skill bridges 6 domains simultaneously — token engineering, DeFi mechanics, security, legal/compliance, crisis communications, and on-chain analytics. No other token launch skill in the ecosystem covers all 6. Real TGEs require all 6 simultaneously.
 
-| Stage | File |
-|-------|------|
-| Creating the token (mint, extensions, metadata, authorities) | `skill/spl-token-setup.md` |
-| Designing supply, allocation, vesting | `skill/tokenomics-design.md` |
-| Running an airdrop (eligibility, snapshots, Merkle distribution) | `skill/airdrop-orchestration.md` |
-| Seeding initial DEX liquidity | `skill/liquidity-seeding.md` |
-| Market making (Meteora DLMM, professional MMs, spread monitoring) | `skill/market-making.md` |
-| CEX listing, Jupiter routing, Birdeye/CMC/CoinGecko | `skill/listing-strategy.md` |
-| Legal structure, KYC, regulatory compliance | `skill/legal-compliance.md` |
-| Post-launch monitoring (holders, LP health, whale alerts) | `skill/post-launch-monitoring.md` |
+---
 
-## Agents
+## Routing Table
 
-- `tge-orchestrator` — master coordinator for the full TGE lifecycle
+### Full TGE coordination (any stage)
+→ Load `agents/tge-orchestrator.md`
 
-## Commands
+Use for: Launch coordination, war room setup, launch day decision trees, week-by-week countdown, 40-point readiness scoring, post-launch crisis response.
 
-- `/tge-checklist` — full pre-launch readiness checklist
-- `/tokenomics-review` — review and red-flag a tokenomics design
+---
 
-## Rules
+### Token creation (Token-2022 / SPL)
+→ Load `skill/spl-token-setup.md`
 
-- `tge-safety.md` — always-on safety rules (vesting enforcement, authority controls, legal flags)
+Use for: Creating a new token with Token-2022, setting extensions (transfer fee, non-transferable, permanent delegate), mint authority setup, Squads v4 multisig configuration, metadata upload to Arweave.
 
-## TGE timeline overview
+---
+
+### Tokenomics design and vesting
+→ Load `skill/tokenomics-design.md`
+
+Use for: Allocation framework, supply sizing, vesting architecture (Streamflow), TGE circulating supply modeling, death spiral early warning system, points-to-token Merkle migration.
+
+---
+
+### Airdrop + Merkle distributor
+→ Load `skill/airdrop-orchestration.md`
+
+Use for: Airdrop eligibility design, anti-sybil scoring, Merkle tree construction, on-chain distributor deployment (Anchor), double-claim prevention, OFAC/sanctions screening, claim site architecture.
+
+---
+
+### Liquidity seeding
+→ Load `skill/liquidity-seeding.md`
+
+Use for: Meteora DLMM pool creation (bin step selection, fee tier), Orca Whirlpool setup, Raydium CPMM, Alpha Vault (anti-sniper), initial price setting, Jito bundle LP execution.
+
+---
+
+### Market making
+→ Load `skill/market-making.md`
+
+Use for: Professional MM selection, Meteora DLMM self-MM rebalancing, spread monitoring, market depth management, launch day market structure.
+
+---
+
+### Jupiter + CEX listing
+→ Load `skill/listing-strategy.md`
+
+Use for: Jupiter strict list PR submission, Birdeye/DexScreener info submission, CEX outreach timeline, tier-1 vs tier-2 listing strategy.
+
+---
+
+### Post-launch monitoring + death spiral detection
+→ Load `skill/post-launch-monitoring.md`
+
+Use for: Helius webhook setup, real-time sell pressure classification, whale alert system, death spiral detector, LP health monitoring, week-2 pattern detection.
+
+---
+
+### Protocol economics + fee modeling
+→ Load `skill/protocol-economics.md`
+
+Use for: Revenue sustainability modeling, buyback-and-burn design, emission schedule simulation, treasury management, value accrual mechanism design.
+
+---
+
+### Legal, compliance, OFAC, MiCA
+→ Load `skill/legal-compliance.md`
+
+Use for: Howey test analysis, jurisdiction matrix (US/EU/UAE/SG), geo-blocking implementation, MiCA alignment, OFAC wallet screening, securities law risk assessment.
+
+---
+
+## The 40-Point Readiness Benchmark
+
+Full scoring is in `agents/tge-orchestrator.md`. Summary:
+
+| Score | Status |
+|-------|--------|
+| 36-40 | Launch-ready |
+| 32-35 | Launch-ready with caveats |
+| 28-31 | High risk — delay 1 week |
+| <28 | Do not launch |
+
+---
+
+## Launch Lifecycle Map
 
 ```
-T-4 weeks:  Token created, multisig authorities set, tokenomics finalized
-T-3 weeks:  Vesting contracts deployed (Streamflow), airdrop list prepared
-T-2 weeks:  Liquidity seeded on Meteora, Jupiter routing confirmed
-T-1 week:   Market maker onboarded, Birdeye/DexScreener listed, legal signed off
-T-0:        Public launch, CoinGecko/CMC application submitted
-T+1 week:   Tier 3-4 CEX listings, monitoring dashboard live
-T+1 month:  Tier 2 CEX discussions, perps listing applications
+DESIGN         → tokenomics-design.md, spl-token-setup.md
+DISTRIBUTION   → airdrop-orchestration.md
+PRE-LAUNCH     → liquidity-seeding.md, market-making.md, listing-strategy.md, legal-compliance.md
+LAUNCH         → tge-orchestrator.md (war room, decision trees)
+POST-LAUNCH    → post-launch-monitoring.md, protocol-economics.md
+WEEK-2+        → post-launch-monitoring.md (death spiral), protocol-economics.md (buyback)
 ```
