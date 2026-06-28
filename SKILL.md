@@ -1,5 +1,5 @@
 name: solana-token-launch
-description: End-to-end TGE coordination for Solana protocols — tokenomics design, token creation, airdrop orchestration, liquidity seeding, market making, listing strategy, post-launch monitoring, and death spiral prevention.
+description: End-to-end TGE coordination for Solana protocols — tokenomics design, token creation, airdrop orchestration, liquidity seeding, market making, listing strategy, post-launch monitoring, governance, NFT launches, and death spiral prevention.
 user-invocable: true
 cross-domain: true
 
@@ -14,7 +14,9 @@ cross-domain: true
 
 ## Cross-Domain Integration Points
 
-This skill bridges 6 domains simultaneously — token engineering, DeFi mechanics, security, legal/compliance, crisis communications, and on-chain analytics. No other token launch skill in the ecosystem covers all 6. Real TGEs require all 6 simultaneously.
+This skill bridges 8 domains simultaneously — token engineering, DeFi mechanics, security, legal/compliance, crisis communications, on-chain analytics, DAO governance, and NFT mechanics. No other token launch skill in the ecosystem covers all 8.
+
+See `ecosystem-signals.md` for cross-skill event protocols (Observability, Incident Response, DePIN).
 
 ---
 
@@ -65,51 +67,61 @@ Use for: Professional MM selection, Meteora DLMM self-MM rebalancing, spread mon
 ### Jupiter + CEX listing
 → Load `skill/listing-strategy.md`
 
-Use for: Jupiter strict list PR submission, Birdeye/DexScreener info submission, CEX outreach timeline, tier-1 vs tier-2 listing strategy.
-
----
-
-### Post-launch monitoring + death spiral detection
-→ Load `skill/post-launch-monitoring.md`
-
-Use for: Helius webhook setup, real-time sell pressure classification, whale alert system, death spiral detector, LP health monitoring, week-2 pattern detection.
+Use for: Jupiter strict list application, Birdeye/DexScreener metadata, CoinGecko/CMC submission, CEX tier strategy, listing timing.
 
 ---
 
 ### Protocol economics + fee modeling
 → Load `skill/protocol-economics.md`
 
-Use for: Revenue sustainability modeling, buyback-and-burn design, emission schedule simulation, treasury management, value accrual mechanism design.
+Use for: Fee simulation, emission schedule design, inflation stress-testing, token sink design, protocol revenue projections.
 
 ---
 
-### Legal, compliance, OFAC, MiCA
+### Legal and compliance
 → Load `skill/legal-compliance.md`
 
-Use for: Howey test analysis, jurisdiction matrix (US/EU/UAE/SG), geo-blocking implementation, MiCA alignment, OFAC wallet screening, securities law risk assessment.
+Use for: Howey test analysis, SAFTs, jurisdiction matrix, OFAC screening, KYC flows, MiCA overview, US securities framework.
 
 ---
 
-## The 40-Point Readiness Benchmark
+### Post-launch monitoring
+→ Load `skill/post-launch-monitoring.md`
 
-Full scoring is in `agents/tge-orchestrator.md`. Summary:
-
-| Score | Status |
-|-------|--------|
-| 36-40 | Launch-ready |
-| 32-35 | Launch-ready with caveats |
-| 28-31 | High risk — delay 1 week |
-| <28 | Do not launch |
+Use for: Helius webhook setup, Birdeye integration, sell pressure classification, LP health monitoring, death spiral detection, 72-hour playbook.
 
 ---
 
-## Launch Lifecycle Map
+### DAO governance (Realms, veToken, SPL Governance)
+→ Load `skill/governance-mechanics.md`
 
-```
-DESIGN         → tokenomics-design.md, spl-token-setup.md
-DISTRIBUTION   → airdrop-orchestration.md
-PRE-LAUNCH     → liquidity-seeding.md, market-making.md, listing-strategy.md, legal-compliance.md
-LAUNCH         → tge-orchestrator.md (war room, decision trees)
-POST-LAUNCH    → post-launch-monitoring.md, protocol-economics.md
-WEEK-2+        → post-launch-monitoring.md (death spiral), protocol-economics.md (buyback)
-```
+Use for: Realms DAO setup, SPL Governance configuration, vote-escrow (veToken) design and Anchor implementation, treasury control, governance token trade-offs, Squads + Realms integration.
+
+---
+
+### NFT launches (compressed NFTs, collection TGE, NFT-as-token)
+→ Load `skill/nft-launch.md`
+
+Use for: Bubblegum cNFT collection setup, bulk mint airdrops, Genesis NFT → vested token conversion, NFT-gated access patterns, cNFT eligibility proof for token claims.
+
+---
+
+### Cross-skill signals
+→ Load `ecosystem-signals.md`
+
+Use for: Firing `TGE_LAUNCHED` to Observability at T+0, handling `DEPIN_TGE_READY` inbound from DePIN skill, escalating `TGE_CRISIS` to Incident Response.
+
+---
+
+## Red Flags — Surface Immediately Regardless of Current Task
+
+| Signal | Response |
+|--------|----------|
+| Team allocation > 25% | Flag as rug risk. Cap at 20% minimum. |
+| No on-chain vesting deployed | Verbal promises are not vesting |
+| Mint authority under single EOA | Move to Squads v4 before any announcement |
+| <$100K liquidity at launch | Snipers will exploit this |
+| Jupiter routing not verified | Test 48h before launch, not on launch day |
+| No legal opinion | Flag if launching to US persons without Howey analysis |
+| Metadata on IPFS without pinning | Will 404 in 12-24 months |
+| No `TGE_LAUNCHED` signal fired | Observability is not monitoring — load ecosystem-signals.md |
