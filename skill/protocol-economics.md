@@ -46,33 +46,67 @@ STRONG SINKS (structural, hard to exit):
 
 ### Implementing Buy-and-Burn from Fee Revenue
 
+```
+⚠️  AUDIT CHECKLIST — review before deploying this instruction:
+ [ ] fee_vault PDA seeds verified — attacker cannot substitute a fake vault
+ [ ] buyback_wallet owner = network_config PDA (not a user wallet)
+ [ ] buyback_wallet.mint = token_mint (prevent token substitution)
+ [ ] jupiter_program address validated via constraint (see JUPITER_V6_PROGRAM_ID)
+ [ ] MINIMUM_BUYBACK_THRESHOLD set high enough to prevent dust-drain spam
+ [ ] Decide: permissionless (anyone can call) or crank-only? If permissionless, add reentrancy guard.
+```
+
 ```typescript
 // programs/my_protocol/src/instructions/process_fees.rs (Anchor)
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Burn, Token, TokenAccount, Mint};
 
+// ── Named constants ─────────────────────────────────────────────────────────
+// Minimum fees to accumulate before executing a buyback.
+// Too low = spammable. Too high = idle treasury revenue.
+pub const MINIMUM_BUYBACK_THRESHOLD: u64 = 1_000_000_000; // 1,000 USDC (6 decimals)
+
+// Jupiter v6 mainnet program ID — verify at https://station.jup.ag/docs before deploying.
+// Hardcoded here to prevent program-substitution attacks via a malicious CPI target.
+pub const JUPITER_V6_PROGRAM_ID: &str = "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4";
+
 #[derive(Accounts)]
 pub struct ProcessProtocolFees<'info> {
     #[account(mut)]
-    pub fee_vault: Account<'info, TokenAccount>,          // Protocol fee accumulator
-    
+    pub fee_vault: Account<'info, TokenAccount>,
+
     #[account(mut)]
-    pub token_mint: Account<'info, Mint>,                 // Your protocol token
-    
-    #[account(mut)]
-    pub buyback_wallet: Account<'info, TokenAccount>,     // Holds purchased tokens pre-burn
-    
+    pub token_mint: Account<'info, Mint>,
+
+    #[account(
+        mut,
+        constraint = buyback_wallet.owner == network_config.key() @ ProtocolError::InvalidBuybackWallet,
+        constraint = buyback_wallet.mint  == token_mint.key()     @ ProtocolError::TokenMintMismatch,
+    )]
+    pub buyback_wallet: Account<'info, TokenAccount>,
+
     pub token_program: Program<'info, Token>,
-    
-    /// CHECK: Jupiter CPI for fee token → protocol token swap
+
+    /// Jupiter v6 program — UncheckedAccount is required for external CPI targets.
+    /// The address constraint below replaces the type-level check Anchor normally provides.
+    ///
+    /// SECURITY: Without this constraint, an attacker could pass a malicious program
+    /// that drains buyback_wallet instead of executing the swap.
+    #[account(
+        constraint = jupiter_program.key().to_string() == JUPITER_V6_PROGRAM_ID
+            @ ProtocolError::InvalidJupiterProgram
+    )]
+    /// CHECK: Jupiter v6 — address validated by constraint above
     pub jupiter_program: UncheckedAccount<'info>,
+
+    pub network_config: Account<'info, NetworkConfig>,
 }
 
 pub fn process_protocol_fees(ctx: Context<ProcessProtocolFees>) -> Result<()> {
     let fee_vault = &ctx.accounts.fee_vault;
     
     // Only execute buyback if enough fees have accumulated (avoid gas waste on micro-burns)
-    let MINIMUM_BUYBACK_THRESHOLD: u64 = 1_000_000_000; // 1,000 USDC equivalent
+    // MINIMUM_BUYBACK_THRESHOLD is defined as a module-level constant above.
     require!(
         fee_vault.amount >= MINIMUM_BUYBACK_THRESHOLD,
         ProtocolError::InsufficientFeesForBuyback
@@ -118,7 +152,15 @@ Before setting emission rates, simulate 3 years of your protocol economics.
 ```python
 #!/usr/bin/env python3
 # scripts/simulate_tokenomics.py
-# Run: python3 simulate_tokenomics.py
+#
+# Dependencies: stdlib only — no external packages required.
+# Python: 3.9+
+# Run:    python3 simulate_tokenomics.py
+#
+# Optional chart output (add matplotlib to requirements.txt):
+#   matplotlib>=3.7.0
+#   pandas>=2.0.0
+#   numpy>=1.24.0
 
 import json
 from dataclasses import dataclass
