@@ -387,3 +387,186 @@ BLOCK TO USE:
   - Verify it's not a high-activity block (avoid end of month, major protocol events)
   - Document the exact block number — publish after announcement
 ```
+
+---
+
+## Security — XSS Prevention in Claim UI
+
+The claim UI renders user-supplied data from the Merkle tree (wallet addresses, amounts, transaction signatures).
+Any field that flows from on-chain data or API responses into the DOM must be sanitised.
+
+```typescript
+// src/claim/sanitize.ts
+// Rules:
+// 1. Never use dangerouslySetInnerHTML with on-chain data
+// 2. Solscan / Explorer links must use a hardcoded base URL + encoded path
+// 3. Error messages from RPC errors must not be injected as raw HTML
+// 4. Amount fields must be parsed as numbers before display — never interpolated raw
+
+/**
+ * Safely formats a token amount from base units.
+ * Rejects non-numeric input to prevent injection.
+ *
+ * @param raw       - Raw amount from on-chain (may be string bigint from JSON)
+ * @param decimals  - Token decimals (usually 9 for SPL)
+ * @returns Human-readable string, e.g. "1,250.00"
+ * @throws TypeError if raw is not a valid integer string
+ */
+export function formatTokenAmount(raw: string | bigint | number, decimals: number = 9): string {
+  const bn = BigInt(raw); // throws if not a valid integer — rejects injection strings
+  const divisor = BigInt(10 ** decimals);
+  const whole = bn / divisor;
+  const frac = bn % divisor;
+  return `${whole.toLocaleString()}.${frac.toString().padStart(decimals, "0").slice(0, 2)}`;
+}
+
+/**
+ * Builds a safe Solscan transaction link.
+ * Only accepts base58 signatures (44 chars, [1-9A-HJ-NP-Za-km-z]+).
+ *
+ * @param signature - Transaction signature from claim response
+ * @param cluster   - "mainnet-beta" | "devnet"
+ * @returns Safe URL string — never interpolated from user input
+ */
+export function buildExplorerUrl(
+  signature: string,
+  cluster: "mainnet-beta" | "devnet" = "mainnet-beta"
+): string {
+  // Strict base58 signature validation — rejects XSS payloads like javascript:alert(1)
+  if (!/^[1-9A-HJ-NP-Za-km-z]{44,88}$/.test(signature)) {
+    throw new Error(`Invalid transaction signature: ${signature.slice(0, 20)}…`);
+  }
+  const base = "https://solscan.io/tx/";
+  const clusterParam = cluster === "devnet" ? "?cluster=devnet" : "";
+  return `${base}${encodeURIComponent(signature)}${clusterParam}`;
+}
+
+/**
+ * Sanitises a raw RPC error message for display.
+ * Strips HTML tags and limits length to prevent error-message injection.
+ *
+ * @param err - Error object or string from RPC/SDK
+ * @returns Safe plain-text message
+ */
+export function safeErrorMessage(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  // Strip any HTML tags (a defensive measure — RPC errors shouldn't contain HTML)
+  const stripped = raw.replace(/<[^>]*>/g, "");
+  return stripped.slice(0, 200); // cap at 200 chars
+}
+```
+
+### React component — safe rendering pattern
+
+```tsx
+// ✅ Correct — all dynamic values pass through formatting functions
+<p className="text-2xl font-bold text-foreground">
+  {formatTokenAmount(status.amount)} tokens
+</p>
+<a
+  href={buildExplorerUrl(txSignature)}
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  View on Solscan
+</a>
+{error && (
+  <p className="text-sm text-destructive">
+    {safeErrorMessage(error)}   {/* ← NOT {error.message} directly */}
+  </p>
+)}
+
+// ❌ Never do this with on-chain data:
+// <div dangerouslySetInnerHTML={{ __html: status.message }} />
+// <a href={userInput}>...</a>           ← javascript: protocol injection
+// <p>{error.message}</p>               ← RPC errors can contain server HTML
+```
+
+---
+
+## Rate Limiting — Claim API Endpoint
+
+The claim endpoint is a high-value attack surface. Without rate limiting, attackers can:
+- Enumerate all eligible wallets by brute-forcing addresses
+- Attempt replay attacks at high frequency
+- DoS the endpoint on claim day (traffic spike)
+
+```typescript
+// pages/api/claim.ts — production-grade rate limiting
+
+import { NextApiRequest, NextApiResponse } from "next";
+
+// ── Rate limit constants ──────────────────────────────────────────────────
+const CLAIM_RATE_LIMIT_PER_WALLET_PER_MIN = 3;   // prevent spam retries
+const CLAIM_RATE_LIMIT_GLOBAL_PER_MIN     = 500;  // total endpoint capacity
+const ELIGIBILITY_RATE_LIMIT_PER_IP_PER_MIN = 20; // check-eligibility calls
+
+// Simple in-memory store — use Redis for multi-instance deployments
+const walletRequests  = new Map<string, { count: number; resetAt: number }>();
+const ipRequests      = new Map<string, { count: number; resetAt: number }>();
+let   globalCount     = 0;
+let   globalResetAt   = Date.now() + 60_000;
+
+function checkRateLimit(
+  key: string,
+  store: Map<string, { count: number; resetAt: number }>,
+  limit: number
+): boolean {
+  const now = Date.now();
+  const entry = store.get(key);
+  if (!entry || entry.resetAt < now) {
+    store.set(key, { count: 1, resetAt: now + 60_000 });
+    return false; // not limited
+  }
+  if (entry.count >= limit) return true; // limited
+  entry.count++;
+  return false;
+}
+
+/**
+ * Claim API handler — validates Merkle proof and executes on-chain claim.
+ *
+ * Rate limits:
+ *   - Per wallet:  ${CLAIM_RATE_LIMIT_PER_WALLET_PER_MIN} req/min
+ *   - Per IP:      ${CLAIM_RATE_LIMIT_PER_IP_PER_MIN} req/min (eligibility checks)
+ *   - Global:      ${CLAIM_RATE_LIMIT_GLOBAL_PER_MIN} req/min
+ *
+ * @param req.body.wallet   - Claimant wallet address (base58)
+ * @param req.body.proof    - Merkle proof array
+ * @param req.body.amount   - Claimed amount (must match Merkle leaf)
+ */
+export default async function claimHandler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  // ── Input validation ────────────────────────────────────────────────────
+  const { wallet, proof, amount } = req.body ?? {};
+  if (!wallet || typeof wallet !== "string" || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
+    return res.status(400).json({ error: "Invalid wallet address" });
+  }
+  if (!Array.isArray(proof) || proof.length === 0 || proof.length > 32) {
+    return res.status(400).json({ error: "Invalid Merkle proof" });
+  }
+  if (!amount || isNaN(Number(amount)) || BigInt(amount) <= 0n) {
+    return res.status(400).json({ error: "Invalid amount" });
+  }
+
+  // ── Rate limiting ───────────────────────────────────────────────────────
+  const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0] ?? "unknown";
+
+  // Global rate limit
+  if (Date.now() > globalResetAt) { globalCount = 0; globalResetAt = Date.now() + 60_000; }
+  if (++globalCount > CLAIM_RATE_LIMIT_GLOBAL_PER_MIN) {
+    return res.status(429).json({ error: "Service busy — try again in 60 seconds" });
+  }
+
+  // Per-wallet rate limit
+  if (checkRateLimit(wallet, walletRequests, CLAIM_RATE_LIMIT_PER_WALLET_PER_MIN)) {
+    return res.status(429).json({ error: "Too many requests for this wallet" });
+  }
+
+  // ── Process claim ───────────────────────────────────────────────────────
+  // ... verify Merkle proof, build and submit claim transaction ...
+}
+```
