@@ -1,57 +1,76 @@
-# CI/CD Configuration
+# CI/CD Pipeline
 
-## GitHub Actions Workflow
+This skill ships with a full GitHub Actions CI pipeline.
 
-Create `.github/workflows/ci.yml` in your fork:
+## Setup (one-time)
 
-```yaml
-name: Skill Quality CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  markdown-lint:
-    name: Markdown Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: npm install -g markdownlint-cli
-      - run: markdownlint "**/*.md" --ignore node_modules --config .markdownlint.json
-
-  skill-structure:
-    name: Required File Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
-          REQUIRED=(
-            "AGENTS.md" "CLAUDE.md" "CONTRIBUTING.md" "SECURITY.md"
-            "README.md" "SKILL.md" "ecosystem-signals.md" "install.sh"
-            "rules/tge-safety.md"
-          )
-          MISSING=0
-          for f in "${REQUIRED[@]}"; do
-            [ -f "$f" ] && echo "OK: $f" || { echo "MISSING: $f"; MISSING=$((MISSING+1)); }
-          done
-          [ $MISSING -eq 0 ] || exit 1
-```
-
-## Local Validation
+Copy `.github/workflows/ci.yml` from this file into your fork:
 
 ```bash
-# Lint markdown
-npm install -g markdownlint-cli
+mkdir -p .github/workflows
+cp docs/ci.yml .github/workflows/ci.yml
+git add .github/workflows/ci.yml
+git commit -m "feat(ci): add CI pipeline"
+git push
+```
+
+## What the pipeline checks
+
+| Job | What it validates |
+|-----|------------------|
+| `typescript` | `tsc --noEmit` compilation + Vitest unit tests + code coverage |
+| `python` | `simulate_tokenomics.py` runs without error + `mypy` type check |
+| `secrets` | `gitleaks` scan — zero secrets in any file or git history |
+| `markdown` | `markdownlint` on all `.md` files |
+| `structure` | All 25 required skill files present |
+
+## Coverage thresholds
+
+Configured in `vitest.config.ts`:
+- Statements: 70%
+- Functions: 70%
+- Branches: 60%
+- Lines: 70%
+
+Coverage report uploaded to Codecov (optional — set `CODECOV_TOKEN` secret).
+
+## Local validation
+
+```bash
+# TypeScript compile check
+npx tsc --noEmit
+
+# Run all tests with coverage
+npx vitest run --coverage
+
+# Python simulation
+python3 scripts/simulate_tokenomics.py
+
+# Secret scan
+gitleaks detect --source . --report-format json
+
+# Markdown lint
 markdownlint "**/*.md" --ignore node_modules
 
-# Check for required files
-for f in AGENTS.md CLAUDE.md CONTRIBUTING.md SECURITY.md ecosystem-signals.md; do
-  [ -f "$f" ] && echo "OK: $f" || echo "MISSING: $f"
+# Structure check
+for f in SKILL.md AGENTS.md CLAUDE.md README.md CONTRIBUTING.md \
+  CHANGELOG.md SECURITY.md DEPLOYMENT.md Dockerfile requirements.txt \
+  ecosystem-signals.md wallet-framework.md \
+  skill/post-launch-monitoring.md skill/protocol-economics.md \
+  skill/airdrop-orchestration.md skill/tokenomics-design.md \
+  skill/liquidity-seeding.md skill/market-making.md \
+  skill/listing-strategy.md skill/spl-token-setup.md \
+  agents/tge-orchestrator.md scripts/simulate_tokenomics.py \
+  tests/unit/death-spiral-detector.test.ts \
+  tests/unit/sell-pressure-analyzer.test.ts \
+  tests/unit/merkle-distributor.test.ts \
+  tests/unit/liquidity-health.test.ts \
+  tests/integration/helius-api.test.ts \
+  tests/e2e/claim-flow.test.ts; do
+  test -f "$f" && echo "✅ $f" || echo "❌ MISSING: $f"
 done
-
-# Verify routing table completeness
-grep -h "^|" SKILL.md | grep "skill/" | wc -l
 ```
+
+## Full workflow file
+
+The complete `ci.yml` is in `docs/ci.yml` — copy it to `.github/workflows/ci.yml`.
