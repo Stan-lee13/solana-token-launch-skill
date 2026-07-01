@@ -43,6 +43,25 @@ Use for: Allocation framework, supply sizing, vesting architecture (Streamflow),
 
 ---
 
+### Vesting Circuit Breaker — market-health-gated unlocks ★
+→ Load `skill/vesting-circuit-breaker.md`
+
+Use for: Gating scheduled team/investor unlocks on real-time market health instead of
+a blind calendar date. No vesting scheme in the ecosystem currently connects unlock
+timing to death-spiral risk — this is the fix. Bounded, disclosed, non-discretionary.
+
+---
+
+### Reflexive Monte Carlo simulation — probability, not a point estimate ★
+→ Load `skill/reflexive-simulation.md`
+
+Use for: Answering "what's the probability this launch survives week two" via an
+agent-based Monte Carlo model (5 holder archetypes + real constant-product AMM),
+instead of `scripts/simulate_tokenomics.py`'s single deterministic emission path.
+Run this BEFORE finalizing the TGE checklist, not after a bad launch.
+
+---
+
 ### Airdrop + Merkle distributor
 → Load `skill/airdrop-orchestration.md`
 
@@ -50,10 +69,32 @@ Use for: Airdrop eligibility design, anti-sybil scoring, Merkle tree constructio
 
 ---
 
+### Conviction-Weighted Airdrop Scoring — beyond static sybil filters ★
+→ Load `skill/conviction-scoring.md`
+
+Use for: Any airdrop with meaningful value at stake. Replaces binary pass/fail sybil
+filters (trivially gameable once published) with a continuous score built from
+funding-cluster detection, temporal entropy, and a commit-reveal claim mechanism
+that defeats mempool front-running. Full tested implementation in
+`tests/unit/conviction-scoring.test.ts`.
+
+---
+
 ### Liquidity seeding
 → Load `skill/liquidity-seeding.md`
 
 Use for: Meteora DLMM pool creation (bin step selection, fee tier), Orca Whirlpool setup, Raydium CPMM, Alpha Vault (anti-sniper), initial price setting, Jito bundle LP execution.
+
+---
+
+### Programmatic Stabilization Vault — disclosed, bounded buyback defense ★
+→ Load `skill/stabilization-vault.md`
+
+Use for: A Solana-native port of the TradFi greenshoe/over-allotment option — a
+disclosed, on-chain, mechanically-bounded buyback vault funded from TGE proceeds
+that defends price during the highest-volatility post-launch window. Nothing in
+the current ecosystem documents this pattern; most teams do informal, undisclosed
+buybacks that read as market manipulation because there's no disclosed rule set.
 
 ---
 

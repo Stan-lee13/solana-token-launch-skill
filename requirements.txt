@@ -1,10 +1,15 @@
-# Python dependencies for scripts/simulate_tokenomics.py
+# Python dependencies for scripts/simulate_tokenomics.py and
+# scripts/monte_carlo_reflexive_sim.py
 # Install: pip install -r requirements.txt  (Python 3.9+)
-# Core simulation uses stdlib only — packages below are optional extras
+# simulate_tokenomics.py uses stdlib only — matplotlib/pandas below are optional
+# chart-output extras for it. numpy is a HARD requirement for
+# monte_carlo_reflexive_sim.py (vectorized percentile bands across trials).
 
-# Chart output
+# Chart output (simulate_tokenomics.py, optional)
 matplotlib>=3.7.0
 pandas>=2.0.0
+
+# Required by monte_carlo_reflexive_sim.py
 numpy>=1.24.0
 
 # Type checking

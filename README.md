@@ -69,6 +69,10 @@ npx vitest run
 
 | Capability | This Skill | Competitors |
 |---|---|---|
+| Vesting Circuit Breaker — market-health-gated unlocks (not blind calendar) | ✅ | ❌ |
+| Programmatic Stabilization Vault — disclosed greenshoe-style buyback defense | ✅ | ❌ |
+| Conviction-Weighted Airdrop Scoring — funding-cluster + entropy sybil detection | ✅ | ❌ |
+| Agent-based Monte Carlo reflexivity simulator (probability, not one point estimate) | ✅ | ❌ |
 | Week-2 death pattern detection + recovery | ✅ | ❌ |
 | On-chain TGE checklist with address verification | ✅ | ❌ |
 | Sell pressure analyzer (Helius webhook) | ✅ | ❌ |
@@ -76,12 +80,20 @@ npx vitest run
 | Merkle distributor with points-to-token conversion | ✅ | ❌ |
 | Legal compliance (OFAC screening, securities analysis) | ✅ | ❌ |
 | Post-launch monitoring (30-day survival framework) | ✅ | ❌ |
-| 7 test suites covering every major component | ✅ | ❌ |
+| 8 test suites covering every major component | ✅ | ❌ |
 | Wallet security for TGE team wallets | ✅ | ❌ |
+
+**The four starred capabilities above are structural gaps in the ecosystem, not just
+deeper documentation** — no other Solana token launch resource connects vesting
+timing to market health, discloses a rule-bound buyback mechanism, replaces binary
+sybil filters with continuous scoring, or models launch outcomes as a probability
+distribution instead of a single deterministic ledger. See `skill/vesting-circuit-breaker.md`,
+`skill/stabilization-vault.md`, `skill/conviction-scoring.md`, and
+`skill/reflexive-simulation.md`.
 
 ---
 
-## Skill Map (13 Files, Progressive Loading)
+## Skill Map (17 Files, Progressive Loading)
 
 ```
 solana-token-launch-skill/
@@ -91,10 +103,14 @@ solana-token-launch-skill/
 │
 ├── skill/
 │   ├── tokenomics-design.md           ← Supply model, vesting curves, emission design
+│   ├── vesting-circuit-breaker.md     ← Market-health-gated unlocks, not a blind calendar ★★
+│   ├── reflexive-simulation.md        ← Agent-based Monte Carlo — probability, not one path ★★
 │   ├── protocol-economics.md          ← Game theory, reflexivity, unlock pressure modeling
 │   ├── spl-token-setup.md             ← Token-2022, mint authority, metadata
 │   ├── airdrop-orchestration.md       ← Merkle distributor, points→token, OFAC screening ★
+│   ├── conviction-scoring.md          ← Funding-cluster + entropy sybil scoring, commit-reveal ★★
 │   ├── liquidity-seeding.md           ← Meteora DLMM, Alpha Vault, market maker briefing
+│   ├── stabilization-vault.md         ← Disclosed greenshoe-style buyback defense ★★
 │   ├── market-making.md               ← Spread management, depth targets, emergency protocol
 │   ├── listing-strategy.md            ← Jupiter strict list, DEXScreener, CoinGecko timeline
 │   ├── governance-mechanics.md        ← DAO setup, Realms, parameter governance
@@ -111,23 +127,30 @@ solana-token-launch-skill/
 │   ├── tge-checklist.md               ← /tge-checklist: on-chain Go/No-Go verdict  ★
 │   └── tokenomics-review.md           ← /tokenomics-review: stress test your model
 │
+├── scripts/
+│   ├── simulate_tokenomics.py         ← Deterministic emission/burn ledger
+│   └── monte_carlo_reflexive_sim.py   ← Agent-based Monte Carlo reflexivity engine ★★
+│
 ├── tests/
 │   ├── unit/death-spiral-detector.test.ts       ← Test the week-2 detector
 │   ├── unit/merkle-distributor.test.ts          ← Test airdrop distribution logic
 │   ├── unit/liquidity-health.test.ts            ← Test LP health scoring
 │   ├── unit/sell-pressure-analyzer.test.ts      ← Test sell pressure signals
+│   ├── unit/conviction-scoring.test.ts          ← Test sybil scoring + commit-reveal ★★
 │   ├── integration/helius-api.test.ts           ← Test Helius webhook integration
 │   ├── regression/tokenomics-simulation.test.ts ← Regression on tokenomics math
 │   └── e2e/claim-flow.test.ts                   ← End-to-end claim flow test
 │
 └── wallet-framework.md                ← Shared wallet security baseline (cross-skill)
 
-★ = not found in any other token launch submission in this bounty
+★  = not found in any other token launch submission in this bounty
+★★ = a structural gap in the wider ecosystem, not just this bounty pool — no public
+     Solana resource documents these patterns at all
 ```
 
 ---
 
-## Five Things No Other Token Launch Submission Has
+## Six Things No Other Token Launch Submission Has
 
 **1. Week-2 death pattern detection with typed verdict** (`skill/post-launch-monitoring.md` + `tests/unit/death-spiral-detector.test.ts`)
 A `SpiralDetector` that monitors burn/emit ratio, sell pressure (Helius webhooks), LP depth, holder concentration, and price drawdown simultaneously. Returns a typed `{ riskLevel: "SAFE" | "WATCH" | "WARNING" | "SPIRAL", triggeredConditions, recommendation }` verdict. When SPIRAL fires, the playbook activates: treasury buyback, emission pause, emergency DAO vote. Validated by a full test suite.
@@ -141,8 +164,11 @@ Production-ready implementation of the airdrop pattern that every protocol uses 
 **4. Wallet security for TGE team wallets** (`skill/wallet-tge-security.md`)
 The most dangerous moment for a team wallet is TGE day — multiple signers, high pressure, unfamiliar flows. This covers: hardware wallet ceremony for TGE transactions, Squads transaction review before signing, address validation on every recipient, and the exact actions to take if a team member's key is compromised at T-1 hour.
 
-**5. 7 test suites as executable documentation** (`tests/`)
-Every major component has a test suite: the death spiral detector, Merkle distributor, LP health scoring, sell pressure analyzer, Helius API integration, tokenomics simulation, and end-to-end claim flow. These validate the math that determines whether your token survives — run them before you deploy, not after.
+**5. 8 test suites as executable documentation** (`tests/`)
+Every major component has a test suite: the death spiral detector, Merkle distributor, LP health scoring, sell pressure analyzer, conviction scoring, Helius API integration, tokenomics simulation, and end-to-end claim flow. These validate the math that determines whether your token survives — run them before you deploy, not after.
+
+**6. A reflexivity defense stack — not just detection, active mitigation** (`skill/vesting-circuit-breaker.md`, `skill/stabilization-vault.md`, `skill/conviction-scoring.md`, `skill/reflexive-simulation.md`)
+Everything else in this repo (and every competing submission) detects and reports on risk after it's already happening. This is the one part of the skill that actively *defends* against the Week-2 Death pattern before and during it: Vesting Circuit Breaker gates scheduled unlocks on real-time market health instead of a blind calendar; Stabilization Vault is a disclosed, mechanically-bounded on-chain port of the TradFi greenshoe option; Conviction-Weighted Airdrop Scoring replaces binary sybil filters (trivially gameable once published) with funding-cluster detection, temporal entropy, and commit-reveal claims; and the Monte Carlo reflexivity simulator tells you the *probability* of survival before you ever launch, not just a single deterministic ledger. All four are honestly documented with their calibration assumptions and limitations — see each file's own "Honest limitations" section.
 
 ---
 

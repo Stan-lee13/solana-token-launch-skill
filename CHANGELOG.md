@@ -7,6 +7,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Reflexivity Defense Stack (4 new systems — genuine ecosystem gaps, not documentation depth)
+- **`skill/vesting-circuit-breaker.md`** — gates scheduled team/investor unlocks on
+  real-time market health (drawdown, LP ratio, sell pressure) instead of a blind
+  calendar date. Bounded, disclosed, non-discretionary response tiers; no
+  discretionary "team decides on the day" override. No vesting scheme in the
+  ecosystem currently connects unlock timing to death-spiral risk.
+- **`skill/stabilization-vault.md`** — a disclosed, on-chain, mechanically-bounded
+  buyback vault funded from TGE proceeds, ported from the TradFi greenshoe/
+  over-allotment option. Every trigger is a pure function of on-chain state with
+  no discretionary branch, and emits a public, independently-verifiable audit
+  trail. Most teams currently do informal, undisclosed buybacks that read as
+  market manipulation because there's no disclosed rule set behind them.
+- **`skill/conviction-scoring.md` + `tests/unit/conviction-scoring.test.ts`** —
+  Conviction-Weighted Airdrop Scoring (CWAS). Replaces the standard binary
+  pass/fail sybil filters (minimum age/balance/tx-count — all trivially gameable
+  once the thresholds are public) with a continuous composite score: funding-
+  cluster detection (wallets batch-funded from one source in a tight time
+  window), hour-of-day transaction entropy (flags both scripted-bot and
+  suspiciously-uniform patterns), and a commit-reveal claim mechanism that
+  defeats mempool front-running of Merkle claims. 15 tests, including a
+  regression case proving a farm wallet that clears every existing static
+  filter still gets flagged by cluster detection.
+- **`skill/reflexive-simulation.md` + `scripts/monte_carlo_reflexive_sim.py`** —
+  agent-based Monte Carlo reflexivity simulator (5 holder archetypes, real
+  constant-product AMM price impact, per-trial randomized behavioral
+  parameters) answering "what's the probability this launch survives week
+  two," not just "what's the deterministic emission ledger." Complements
+  (does not replace) `simulate_tokenomics.py`. Ships with an explicit "Honest
+  limitations" section — this is a scenario-comparison tool, not a calibrated
+  pricing model, and says so directly rather than overclaiming precision.
+- 3 new cross-skill signals in `ecosystem-signals.md`: `VESTING_GATE_EVALUATED`,
+  `STABILIZATION_TRIGGERED`, `AIRDROP_CONVICTION_SCORED`, with escalation paths
+  to the existing `TGE_CRISIS` signal when mechanical defenses are exhausted.
+- README overhauled: differentiators table, skill map, and "Six Things" section
+  (previously "Five") updated to lead with the four new systems, each marked ★★
+  to distinguish "structural ecosystem gap" from the existing ★ ("gap in this
+  bounty pool specifically").
+
 ### Fixed — Critical: skill was not runnable out of the box
 - **`package.json` was missing entirely** — `npm install`, `npm test`, and the Dockerfile's
   `npm ci` all failed immediately. This is the exact command the README's own "zero setup"

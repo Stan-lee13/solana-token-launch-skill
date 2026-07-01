@@ -120,6 +120,49 @@ export interface LaunchCrisisSignal {
 }
 ```
 
+### 2.5. Reflexivity Defense Stack Signals (VCB + PSV + CWAS)
+
+Fired by the three new defense systems (`vesting-circuit-breaker.md`,
+`stabilization-vault.md`, `conviction-scoring.md`) — these are internal
+health/action signals, distinct from `TGE_CRISIS` above (which fires on
+active exploits/attacks). Route all three to the same monitoring dashboard
+as Observability's post-launch handoff.
+
+```typescript
+export interface VestingGateEvent {
+  signal: "VESTING_GATE_EVALUATED";
+  market_health_tier: "HEALTHY" | "WATCH" | "SPIRAL";
+  released_amount: bigint;
+  deferred_amount: bigint;
+  deferred_release_date: string | null;
+}
+// Escalate to TGE_CRISIS (severity P1) if this fires with tier=SPIRAL for
+// 2+ consecutive scheduled unlocks — repeated gating signals a structural
+// tokenomics problem, not bad luck.
+
+export interface StabilizationTriggerEvent {
+  signal: "STABILIZATION_TRIGGERED";
+  drawdown_pct_at_trigger: number;
+  buyback_amount_usd: number;
+  buybacks_remaining: number;
+}
+// Escalate to TGE_CRISIS (severity P0, crisis_type: SELL_PRESSURE_SPIRAL) if
+// this fires with buybacks_remaining=0 while drawdown is still worsening —
+// the mechanical defenses are exhausted; hand off to Incident Response's
+// crisis-communication playbook.
+
+export interface ConvictionScoringSummaryEvent {
+  signal: "AIRDROP_CONVICTION_SCORED";
+  total_wallets_scored: number;
+  flagged_for_review: number;
+  largest_cluster_size: number;
+}
+// Fire once per snapshot, before finalizing allocations — this is a
+// pre-launch signal, not a post-launch one.
+```
+
+---
+
 ### 3. Emission Data → DePIN
 
 When Token Launch sets an emission schedule, pass the data to DePIN reward system.
