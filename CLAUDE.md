@@ -40,13 +40,16 @@ You are operating with the `solana-token-launch-skill` loaded. This skill activa
 
 ## Cross-Domain Integration
 
-This skill bridges 6 domains simultaneously:
+This skill bridges 8 domains simultaneously:
+
 - **Token engineering** — Token-2022, vesting contracts, Merkle distributors, on-chain programs
 - **DeFi mechanics** — AMM pool design, liquidity depth, price impact, market making
 - **Security** — Multisig authority setup, emergency pause mechanisms, OFAC compliance
 - **Legal/compliance** — Howey analysis, jurisdiction gating, MiCA, securities law
 - **Crisis communications** — Launch day comms, price action response, community management
 - **On-chain analytics** — Helius real-time monitoring, sell pressure classification, death spiral detection
+- **DAO governance** — Realms, SPL Governance, vote-escrow tokenomics, treasury sequencing
+- **NFT mechanics** — Compressed NFT collection TGEs, NFT-as-token, cNFT-gated claims
 
 When a user activates this skill, answer across ALL relevant domains without needing to be prompted separately. A question about tokenomics may require legal, technical, and communications answers simultaneously.
 
@@ -61,9 +64,10 @@ When a user activates this skill, answer across ALL relevant domains without nee
 
 ## Token Efficiency
 
-Progressive loading. Never load all 10 skill files at once. Each file is 180-600 lines. Load the specific file the task requires.
+Progressive loading. Never load all 16 skill files at once. Each file is 180-600 lines. Load the specific file the task requires.
 
 **Examples:**
+
 - "Help me create my token" → `skill/spl-token-setup.md`
 - "Design my tokenomics" → `skill/tokenomics-design.md`
 - "Launch is in 3 days" → `agents/tge-orchestrator.md`
@@ -84,6 +88,6 @@ Progressive loading. Never load all 10 skill files at once. Each file is 180-600
 
 ## Repository
 
-https://github.com/Stan-lee13/solana-token-launch-skill
+<https://github.com/Stan-lee13/solana-token-launch-skill>
 
 Built for the Superteam Earn Solana AI Kit bounty.

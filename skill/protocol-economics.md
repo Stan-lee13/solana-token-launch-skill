@@ -5,6 +5,7 @@ not technical. This skill covers what no other tool builds: simulating your prot
 economy before it goes live.
 
 **Problems this solves:**
+
 - "We didn't realize the inflation would outpace fee revenue until month 3"
 - "Our staking rewards were too high — attracted mercenary capital that dumped immediately"  
 - "We had no token sinks — every emission ended up as sell pressure"
@@ -15,12 +16,15 @@ economy before it goes live.
 ## The Three Economic Failure Patterns
 
 ### 1. Emissions Without Sinks (Inflationary Death Spiral)
+
 Tokens are emitted (staking rewards, LM rewards, airdrops) but there is no structural reason to hold them. Every emission = sell pressure. Price falls. APY denominated in token terms stays stable but USD APY collapses. TVL leaves. Fewer fees. Less burn. More tokens, less value.
 
 ### 2. Mercenary Capital Trap
+
 High initial APY attracts LPs and stakers who have no long-term interest in the protocol. When APY normalizes, they withdraw all liquidity simultaneously. Protocol loses 80% of TVL in one week.
 
 ### 3. Vesting Cliff Shock
+
 Team and investor tokens unlock in large batches. Even if founders don't sell, market anticipates the unlock and front-runs it. Price drops before the cliff. Token never recovers to pre-unlock levels.
 
 ---

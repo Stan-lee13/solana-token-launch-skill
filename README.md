@@ -8,8 +8,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-7_suites_passing-brightgreen?style=flat-square)](tests/)
-[![Skills](https://img.shields.io/badge/Skill_files-13-F59E0B?style=flat-square)](skill/)
-[![Agents](https://img.shields.io/badge/Agents-1-orange?style=flat-square)](agents/)
+[![Skills](https://img.shields.io/badge/Skill_files-16-F59E0B?style=flat-square)](skill/)
+[![Agents](https://img.shields.io/badge/Agents-5-orange?style=flat-square)](agents/)
 [![Commands](https://img.shields.io/badge/Commands-2-yellow?style=flat-square)](commands/)
 
 </div>
@@ -93,7 +93,7 @@ distribution instead of a single deterministic ledger. See `skill/vesting-circui
 
 ---
 
-## Skill Map (17 Files, Progressive Loading)
+## Skill Map (16 Files, Progressive Loading)
 
 ```
 solana-token-launch-skill/
@@ -117,11 +117,14 @@ solana-token-launch-skill/
 │   ├── legal-compliance.md            ← Howey test, OFAC screening, Reg D/S exemptions    ★
 │   ├── post-launch-monitoring.md      ← 30-day survival framework, sell pressure, death spiral ★
 │   ├── nft-launch.md                  ← NFT-as-token-launch hybrid patterns
-│   ├── wallet-tge-security.md         ← Team wallet security during TGE                    ★
-│   └── SKILL.md                       ← Sub-skill routing table
+│   └── wallet-tge-security.md         ← Team wallet security during TGE                    ★
 │
 ├── agents/
-│   └── tge-orchestrator.md            ← Full TGE lifecycle agent
+│   ├── tge-orchestrator.md            ← Full TGE lifecycle agent (opus)
+│   ├── governance-architect.md        ← Realms DAO, vote-escrow tokenomics (sonnet)
+│   ├── legal-compliance-agent.md      ← Howey/OFAC/jurisdiction risk-flagging (sonnet)
+│   ├── liquidity-market-maker.md      ← Pool architecture, MM, listing strategy (sonnet)
+│   └── post-launch-crisis-agent.md    ← Death-spiral detection, 72h playbook (opus)
 │
 ├── commands/
 │   ├── tge-checklist.md               ← /tge-checklist: on-chain Go/No-Go verdict  ★
@@ -215,6 +218,6 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Stan-lee13/solana-token-laun
 
 MIT License · Built for the [Superteam Earn Solana AI Kit Bounty](https://earn.superteam.fun)
 
-*44 files · 311KB · 13 skill docs · 1 agent · 2 commands · 7 test suites · Week-2 death prevention*
+*65 files · 450KB · 16 skill docs · 5 agents · 2 commands · 8 test suites · Week-2 death prevention*
 
 </div>

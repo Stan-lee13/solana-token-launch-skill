@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added — Reflexivity Defense Stack (4 new systems — genuine ecosystem gaps, not documentation depth)
+
 - **`skill/vesting-circuit-breaker.md`** — gates scheduled team/investor unlocks on
   real-time market health (drawdown, LP ratio, sell pressure) instead of a blind
   calendar date. Bounded, disclosed, non-discretionary response tiers; no
@@ -46,6 +47,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   bounty pool specifically").
 
 ### Fixed — Critical: skill was not runnable out of the box
+
 - **`package.json` was missing entirely** — `npm install`, `npm test`, and the Dockerfile's
   `npm ci` all failed immediately. This is the exact command the README's own "zero setup"
   quickstart tells users to run. Added `package.json` with `vitest`, `@vitest/coverage-v8`,
@@ -65,6 +67,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   this skill would never discover it. Added its routing entry and a red-flag row.
 
 ### Fixed — 3 real bugs caught by actually running the test suite (not just reading it)
+
 - `tests/regression/tokenomics-simulation.test.ts` — "100% buyback" deflationary-scenario
   test used a *high* token price ($10), but burn-per-dollar scales inversely with price, so
   that config was mathematically inflationary (+4.95M/mo), not deflationary. Test's own
@@ -83,6 +86,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   under the newly-added `tsconfig.json`.
 
 ### Added
+
 - `tests/unit/death-spiral-detector.test.ts` — 8 unit tests for death spiral detection logic
 - `tests/unit/sell-pressure-analyzer.test.ts` — 10 unit tests for sell pressure verdict computation
 - `tests/unit/merkle-distributor.test.ts` — 11 unit tests for Merkle tree construction and proof verification
@@ -99,6 +103,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `.github/pull_request_template.md` — PR checklist
 
 ### Fixed — `skill/post-launch-monitoring.md`
+
 - `getAllHolders()`: added `maxPages` guard (200 × 1000 = 200K entries max) to prevent OOM on large token supplies
 - `getAllHolders()`: added 5-minute in-process cache (`cacheGet`/`cacheSet`) to reduce Helius API quota consumption
 - Webhook handler: moved transaction processing to `setImmediate()` async queue — Helius now receives `200 OK` in <1ms instead of waiting for processing
@@ -113,12 +118,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added rate limiting reference table for all external APIs
 
 ### Fixed — `skill/protocol-economics.md`
+
 - `jupiter_program UncheckedAccount`: replaced bare `/// CHECK:` comment with address constraint (`jupiter_program.key() == JUPITER_V6_PROGRAM_ID`) — prevents program substitution attacks
 - Added audit checklist banner to smart contract snippet
 - Extracted `MINIMUM_BUYBACK_THRESHOLD` and `JUPITER_V6_PROGRAM_ID` to named module-level constants
 - Added `requirements.txt` documentation to Python simulation script header
 
 ### Fixed — `skill/airdrop-orchestration.md`
+
 - Added XSS prevention section: `formatTokenAmount()`, `buildExplorerUrl()`, `safeErrorMessage()` with strict input validation
 - Added safe React rendering patterns: no `dangerouslySetInnerHTML`, validator-gated explorer URLs
 - Added production-grade rate limiting to claim API: per-wallet (3/min), per-IP, global (500/min)
@@ -129,6 +136,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [1.0.0] — 2026-06-24
 
 ### Added
+
 - Initial skill release covering full TGE lifecycle
 - `skill/post-launch-monitoring.md` — Helius webhooks, sell pressure detection, LP health, Week 2 Death playbook
 - `skill/protocol-economics.md` — fee modeling, emission simulation (Python), incentive anti-patterns

@@ -383,6 +383,7 @@ metrics:
 ## Unlock event preparation
 
 Before every major vesting unlock:
+
 ```
 T-14d: Communicate unlock publicly (builds trust, reduces panic)
 T-7d:  Publish unlock schedule visualization

@@ -18,6 +18,7 @@ Seed initial liquidity correctly. This is the highest-stakes, most irreversible 
 ## Meteora DLMM — Primary Launch Pool
 
 ### Why DLMM for TGE
+
 - Bin-based pricing = capital efficient even for volatile new tokens
 - Dynamic fees = higher fees during volatility (protects LPs)
 - No impermanent loss if you seed only base token (one-sided seeding for fair launch)
@@ -95,6 +96,7 @@ import AlphaVault from "@meteora-ag/alpha-vault";
 ```
 
 **Use Alpha Vault when:**
+
 - You have strong community demand and expect bots
 - You want a genuine fair launch (equal opportunity for all)
 - You're OK with a 1-24hr deposit window before trading begins

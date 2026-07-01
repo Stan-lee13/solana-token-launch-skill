@@ -35,6 +35,7 @@ python3 scripts/monte_carlo_reflexive_sim.py --json                          # m
 ```
 
 Key levers:
+
 - `--farmer-pct` — fraction of circulating supply held by airdrop farmers (near-zero
   cost basis, dump fast regardless of price). This is the single biggest driver of
   week-2 death in real launches — it's why airdrop sizing decisions in

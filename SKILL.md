@@ -23,6 +23,7 @@ See `ecosystem-signals.md` for cross-skill event protocols (Observability, Incid
 ## Routing Table
 
 ### Full TGE coordination (any stage)
+
 → Load `agents/tge-orchestrator.md`
 
 Use for: Launch coordination, war room setup, launch day decision trees, week-by-week countdown, 40-point readiness scoring, post-launch crisis response.
@@ -30,6 +31,7 @@ Use for: Launch coordination, war room setup, launch day decision trees, week-by
 ---
 
 ### Token creation (Token-2022 / SPL)
+
 → Load `skill/spl-token-setup.md`
 
 Use for: Creating a new token with Token-2022, setting extensions (transfer fee, non-transferable, permanent delegate), mint authority setup, Squads v4 multisig configuration, metadata upload to Arweave.
@@ -37,6 +39,7 @@ Use for: Creating a new token with Token-2022, setting extensions (transfer fee,
 ---
 
 ### Tokenomics design and vesting
+
 → Load `skill/tokenomics-design.md`
 
 Use for: Allocation framework, supply sizing, vesting architecture (Streamflow), TGE circulating supply modeling, death spiral early warning system, points-to-token Merkle migration.
@@ -44,6 +47,7 @@ Use for: Allocation framework, supply sizing, vesting architecture (Streamflow),
 ---
 
 ### Vesting Circuit Breaker — market-health-gated unlocks ★
+
 → Load `skill/vesting-circuit-breaker.md`
 
 Use for: Gating scheduled team/investor unlocks on real-time market health instead of
@@ -55,6 +59,7 @@ Real Anchor program at `programs/vesting-circuit-breaker/` — compiles clean wi
 ---
 
 ### Reflexive Monte Carlo simulation — probability, not a point estimate ★
+
 → Load `skill/reflexive-simulation.md`
 
 Use for: Answering "what's the probability this launch survives week two" via an
@@ -65,6 +70,7 @@ Run this BEFORE finalizing the TGE checklist, not after a bad launch.
 ---
 
 ### Airdrop + Merkle distributor
+
 → Load `skill/airdrop-orchestration.md`
 
 Use for: Airdrop eligibility design, anti-sybil scoring, Merkle tree construction, on-chain distributor deployment (Anchor), double-claim prevention, OFAC/sanctions screening, claim site architecture.
@@ -72,6 +78,7 @@ Use for: Airdrop eligibility design, anti-sybil scoring, Merkle tree constructio
 ---
 
 ### Conviction-Weighted Airdrop Scoring — beyond static sybil filters ★
+
 → Load `skill/conviction-scoring.md`
 
 Use for: Any airdrop with meaningful value at stake. Replaces binary pass/fail sybil
@@ -83,6 +90,7 @@ that defeats mempool front-running. Full tested implementation in
 ---
 
 ### Liquidity seeding
+
 → Load `skill/liquidity-seeding.md`
 
 Use for: Meteora DLMM pool creation (bin step selection, fee tier), Orca Whirlpool setup, Raydium CPMM, Alpha Vault (anti-sniper), initial price setting, Jito bundle LP execution.
@@ -90,6 +98,7 @@ Use for: Meteora DLMM pool creation (bin step selection, fee tier), Orca Whirlpo
 ---
 
 ### Programmatic Stabilization Vault — disclosed, bounded buyback defense ★
+
 → Load `skill/stabilization-vault.md`
 
 Use for: A Solana-native port of the TradFi greenshoe/over-allotment option — a
@@ -103,6 +112,7 @@ Real Anchor program at `programs/stabilization-vault/` — compiles clean with
 ---
 
 ### Market making
+
 → Load `skill/market-making.md`
 
 Use for: Professional MM selection, Meteora DLMM self-MM rebalancing, spread monitoring, market depth management, launch day market structure.
@@ -110,6 +120,7 @@ Use for: Professional MM selection, Meteora DLMM self-MM rebalancing, spread mon
 ---
 
 ### Jupiter + CEX listing
+
 → Load `skill/listing-strategy.md`
 
 Use for: Jupiter strict list application, Birdeye/DexScreener metadata, CoinGecko/CMC submission, CEX tier strategy, listing timing.
@@ -117,6 +128,7 @@ Use for: Jupiter strict list application, Birdeye/DexScreener metadata, CoinGeck
 ---
 
 ### Protocol economics + fee modeling
+
 → Load `skill/protocol-economics.md`
 
 Use for: Fee simulation, emission schedule design, inflation stress-testing, token sink design, protocol revenue projections.
@@ -124,6 +136,7 @@ Use for: Fee simulation, emission schedule design, inflation stress-testing, tok
 ---
 
 ### Legal and compliance
+
 → Load `skill/legal-compliance.md`
 
 Use for: Howey test analysis, SAFTs, jurisdiction matrix, OFAC screening, KYC flows, MiCA overview, US securities framework.
@@ -131,6 +144,7 @@ Use for: Howey test analysis, SAFTs, jurisdiction matrix, OFAC screening, KYC fl
 ---
 
 ### Post-launch monitoring
+
 → Load `skill/post-launch-monitoring.md`
 
 Use for: Helius webhook setup, Birdeye integration, sell pressure classification, LP health monitoring, death spiral detection, 72-hour playbook.
@@ -138,6 +152,7 @@ Use for: Helius webhook setup, Birdeye integration, sell pressure classification
 ---
 
 ### DAO governance (Realms, veToken, SPL Governance)
+
 → Load `skill/governance-mechanics.md`
 
 Use for: Realms DAO setup, SPL Governance configuration, vote-escrow (veToken) design and Anchor implementation, treasury control, governance token trade-offs, Squads + Realms integration.
@@ -145,6 +160,7 @@ Use for: Realms DAO setup, SPL Governance configuration, vote-escrow (veToken) d
 ---
 
 ### NFT launches (compressed NFTs, collection TGE, NFT-as-token)
+
 → Load `skill/nft-launch.md`
 
 Use for: Bubblegum cNFT collection setup, bulk mint airdrops, Genesis NFT → vested token conversion, NFT-gated access patterns, cNFT eligibility proof for token claims.
@@ -152,6 +168,7 @@ Use for: Bubblegum cNFT collection setup, bulk mint airdrops, Genesis NFT → ve
 ---
 
 ### Wallet security (authority custody, mint/freeze/upgrade lockdown)
+
 → Load `skill/wallet-tge-security.md`
 
 Use for: Pre-TGE authority wallet checklist (mint/freeze/upgrade → Squads v4 multisig),
@@ -163,6 +180,7 @@ shared with solana-ux-skill and solana-incident-response-skill.
 ---
 
 ### Cross-skill signals
+
 → Load `ecosystem-signals.md`
 
 Use for: Firing `TGE_LAUNCHED` to Observability at T+0, handling `DEPIN_TGE_READY` inbound from DePIN skill, escalating `TGE_CRISIS` to Incident Response.

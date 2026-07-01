@@ -15,12 +15,14 @@ A production AI skill for the Solana AI Kit covering the full TGE lifecycle on S
 ## Quality Bar
 
 Every skill file must include:
+
 1. A decision tree or "when to use" section at the top
 2. At least one complete, runnable TypeScript code example
 3. Anti-patterns section — what NOT to do and the exact failure mode it causes
 4. Cross-skill integration notes (feeds to/from Observability, Incident Response, DePIN)
 
 Every code example must:
+
 - Use current library APIs (check package.json dates)
 - Handle errors explicitly
 - Include security notes for any key or authority handling

@@ -9,6 +9,7 @@ User types: `/tokenomics-review` or "review my tokenomics" or "analyze my token 
 ## Input required
 
 Ask the user to provide:
+
 ```
 1. Total supply
 2. Allocation table (% per bucket + vesting terms)
@@ -24,6 +25,7 @@ Ask the user to provide:
 
 **1. Alignment (1-10)**
 Do token incentives align all stakeholders (team, investors, community, protocol)?
+
 - Community allocation ≥35% → +2
 - Team vesting ≥3yr with cliff → +2
 - Treasury under DAO control → +1
@@ -33,6 +35,7 @@ Do token incentives align all stakeholders (team, investors, community, protocol
 
 **2. Sustainability (1-10)**
 Can this token model survive a bear market?
+
 - Revenue-backed utility → +3
 - No death spiral emissions → +2
 - Treasury runway ≥24 months → +2
@@ -41,6 +44,7 @@ Can this token model survive a bear market?
 
 **3. Distribution (1-10)**
 Will this token end up in real users' hands?
+
 - Community + airdrop ≥40% → +2
 - No VC/insider >40% combined → +2
 - Public access available → +2
@@ -50,6 +54,7 @@ Will this token end up in real users' hands?
 
 **4. Credibility (1-10)**
 Will CT (Crypto Twitter) and institutions trust this?
+
 - Team vesting cliff ≥12 months → +2
 - Audit completed → +2
 - Legal structure disclosed → +2
@@ -59,6 +64,7 @@ Will CT (Crypto Twitter) and institutions trust this?
 
 **5. Market Mechanics (1-10)**
 Does the supply schedule prevent predictable dump events?
+
 - No two major unlocks within 30 days → +2
 - TGE circulating <15% of total supply → +2
 - Staggered unlock schedule → +2

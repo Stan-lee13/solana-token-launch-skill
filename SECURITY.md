@@ -31,6 +31,7 @@ Code in this skill is for educational reference. Before using any pattern from t
 4. Verify multisig configuration before announcing the token publicly
 
 Key patterns that REQUIRE independent security review before mainnet:
+
 - `skill/spl-token-setup.md` — mint authority transfer to Squads
 - `skill/airdrop-orchestration.md` — Merkle distributor deployment
 - `skill/governance-mechanics.md` — veToken locking program

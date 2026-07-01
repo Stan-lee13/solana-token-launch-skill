@@ -22,6 +22,7 @@ Create production-grade Solana tokens with the current 2026 standard. Token-2022
 ### Most commonly needed extensions for TGE
 
 **Transfer Fee Extension** — take a protocol fee on every transfer
+
 ```typescript
 import {
   createInitializeMintInstruction,
@@ -42,6 +43,7 @@ const maxFee = BigInt(1_000_000_000); // in base units
 ```
 
 **Metadata Extension** — store token metadata directly on-chain
+
 ```typescript
 import {
   createInitializeMetadataPointerInstruction,
@@ -66,6 +68,7 @@ const metadata: TokenMetadata = {
 ```
 
 **Permanent Delegate** — useful for protocol-controlled burns or compliance
+
 ```typescript
 import { ExtensionType, createInitializePermanentDelegateInstruction } from "@solana/spl-token";
 // WARNING: This extension gives the delegate power to transfer/burn any token account's balance.
@@ -151,6 +154,7 @@ const transaction = new Transaction().add(
 ## Metadata hosting
 
 ### Option 1: Arweave (permanent, recommended)
+
 ```bash
 # Use Irys (formerly Bundlr) for Arweave upload
 npm install -g @irys/sdk
@@ -163,6 +167,7 @@ irys upload metadata.json \
 ```
 
 ### Option 2: IPFS via Pinata
+
 ```bash
 curl -X POST "https://api.pinata.cloud/pinning/pinFileToIPFS" \
   -H "Authorization: Bearer YOUR_JWT" \
@@ -170,6 +175,7 @@ curl -X POST "https://api.pinata.cloud/pinning/pinFileToIPFS" \
 ```
 
 **Metadata JSON structure:**
+
 ```json
 {
   "name": "YourToken",
@@ -193,6 +199,7 @@ Update Authority:  Squads v4 multisig  ← Who can update metadata
 ```
 
 ### Squads v4 multisig setup
+
 ```typescript
 import * as multisig from "@sqds/multisig";
 

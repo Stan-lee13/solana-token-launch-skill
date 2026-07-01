@@ -29,6 +29,7 @@ git push
 ## Coverage thresholds
 
 Configured in `vitest.config.ts`:
+
 - Statements: 70%
 - Functions: 70%
 - Branches: 60%
@@ -54,7 +55,7 @@ gitleaks detect --source . --report-format json
 # Markdown lint
 markdownlint "**/*.md" --ignore node_modules
 
-# Structure check
+# Structure check (kept in sync with .github/workflows/ci.yml's structure job)
 for f in SKILL.md AGENTS.md CLAUDE.md README.md CONTRIBUTING.md \
   CHANGELOG.md SECURITY.md DEPLOYMENT.md Dockerfile requirements.txt \
   ecosystem-signals.md wallet-framework.md \
@@ -62,11 +63,24 @@ for f in SKILL.md AGENTS.md CLAUDE.md README.md CONTRIBUTING.md \
   skill/airdrop-orchestration.md skill/tokenomics-design.md \
   skill/liquidity-seeding.md skill/market-making.md \
   skill/listing-strategy.md skill/spl-token-setup.md \
-  agents/tge-orchestrator.md scripts/simulate_tokenomics.py \
+  skill/governance-mechanics.md skill/legal-compliance.md \
+  skill/nft-launch.md skill/wallet-tge-security.md \
+  skill/conviction-scoring.md skill/reflexive-simulation.md \
+  skill/stabilization-vault.md skill/vesting-circuit-breaker.md \
+  rules/tge-safety.md commands/tge-checklist.md commands/tokenomics-review.md \
+  Anchor.toml Cargo.toml \
+  programs/vesting-circuit-breaker/src/lib.rs \
+  programs/stabilization-vault/src/lib.rs \
+  agents/tge-orchestrator.md agents/governance-architect.md \
+  agents/legal-compliance-agent.md agents/liquidity-market-maker.md \
+  agents/post-launch-crisis-agent.md \
+  scripts/simulate_tokenomics.py scripts/monte_carlo_reflexive_sim.py \
   tests/unit/death-spiral-detector.test.ts \
   tests/unit/sell-pressure-analyzer.test.ts \
   tests/unit/merkle-distributor.test.ts \
   tests/unit/liquidity-health.test.ts \
+  tests/unit/conviction-scoring.test.ts \
+  tests/regression/tokenomics-simulation.test.ts \
   tests/integration/helius-api.test.ts \
   tests/e2e/claim-flow.test.ts; do
   test -f "$f" && echo "✅ $f" || echo "❌ MISSING: $f"

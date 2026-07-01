@@ -7,6 +7,7 @@ This skill provides educational legal context for Solana token launches. It is N
 ### The Howey Test (US baseline)
 
 A token is likely a security if it involves:
+
 1. An investment of money
 2. In a common enterprise
 3. With an expectation of profit
@@ -121,6 +122,7 @@ export function middleware(request: NextRequest) {
 ```
 
 **Also block at wallet connection level:**
+
 ```typescript
 // IP-based blocking as additional layer
 const userCountry = await getCountryFromIP(userIP); // Use MaxMind GeoIP or similar
@@ -166,6 +168,7 @@ KYC providers:
 ### For airdrops (lighter requirements)
 
 Most jurisdictions allow airdrop distributions without KYC if:
+
 - Recipients did not pay for the tokens
 - No expectation of specific return created
 - US persons geo-blocked

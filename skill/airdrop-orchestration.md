@@ -71,6 +71,7 @@ const { data } = await helius.rpc.getAssetsByOwner({
 ## Merkle distributor (standard implementation)
 
 ### Why Merkle distributor?
+
 - Gas-efficient — only one on-chain transaction per claim (by the user)
 - No server required — tree can be published to Arweave/IPFS
 - Audited — multiple production-grade implementations exist
@@ -147,6 +148,7 @@ const tx = await distributorSDK.claim({
 ## Allocation calculation formulas
 
 ### Linear scoring model (simple, transparent)
+
 ```typescript
 const score = (
   (txCount / MAX_TX_COUNT) * 0.3 +
@@ -159,6 +161,7 @@ const allocation = Math.floor(score * TIER_MAX_ALLOCATION);
 ```
 
 ### Square root scaling (rewards loyal users, not just whales)
+
 ```typescript
 // Square root prevents massive whale overallocation
 const allocation = Math.floor(Math.sqrt(userVolumeUSD) * SCALING_FACTOR);
@@ -487,6 +490,7 @@ export function safeErrorMessage(err: unknown): string {
 ## Rate Limiting — Claim API Endpoint
 
 The claim endpoint is a high-value attack surface. Without rate limiting, attackers can:
+
 - Enumerate all eligible wallets by brute-forcing addresses
 - Attempt replay attacks at high frequency
 - DoS the endpoint on claim day (traffic spike)

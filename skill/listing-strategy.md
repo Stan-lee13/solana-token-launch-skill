@@ -12,8 +12,9 @@ Jupiter is the primary aggregator for Solana. If you're not routable on Jupiter,
 
 1. Your token must have a Meteora, Orca, or Raydium pool with >$500 liquidity
 2. Jupiter auto-discovers pools within ~15 minutes of creation
-3. For "strict list" (shows in search by default): https://github.com/jup-ag/token-list
+3. For "strict list" (shows in search by default): <https://github.com/jup-ag/token-list>
 4. Submit a PR to the token list with:
+
    ```json
    {
      "chainId": 101,
@@ -29,27 +30,29 @@ Jupiter is the primary aggregator for Solana. If you're not routable on Jupiter,
      }
    }
    ```
+
 5. PRs reviewed within 1–3 business days for strict list
 
 ### Birdeye & DexScreener listing
 
 Both auto-index your token within minutes of pool creation. No action needed. However:
 
-- **Birdeye**: Submit token info at https://birdeye.so — improves display name/logo
-- **DexScreener**: Submit at https://dexscreener.com/solana/token-info — add social links
+- **Birdeye**: Submit token info at <https://birdeye.so> — improves display name/logo
+- **DexScreener**: Submit at <https://dexscreener.com/solana/token-info> — add social links
 
 ### CoinGecko / CoinMarketCap listing (week 1–2)
 
 - Requires 7 days of trading history minimum
 - Need: $50K+ 24h volume, working website, whitepaper or docs
-- **CoinGecko**: https://www.coingecko.com/en/coins/new — self-service form
-- **CMC**: https://coinmarketcap.com/request/ — longer review, 2–4 weeks
+- **CoinGecko**: <https://www.coingecko.com/en/coins/new> — self-service form
+- **CMC**: <https://coinmarketcap.com/request/> — longer review, 2–4 weeks
 
 ## Phase 2: Market making
 
 ### Why you need a market maker
 
 Without a market maker:
+
 - Bid-ask spread becomes very wide → users get bad prices → poor experience
 - Low liquidity depth = easy price manipulation → whales pump/dump on retail
 - Bad Birdeye/CoinGecko metrics → filters you out of discovery
@@ -80,6 +83,7 @@ Without a market maker:
 ### Market making term sheet checklist
 
 When hiring a professional MM, ensure these are in the contract:
+
 - [ ] Loan terms: how much of YOUR tokens they hold
 - [ ] Inventory risk: who bears loss if price drops
 - [ ] Minimum spread obligations (e.g., max 0.5% spread during trading hours)
@@ -130,6 +134,7 @@ Month 6+:    Begin Tier 1 discussions only if metrics justify
 ```
 
 **Key metric thresholds for Tier 2 interest:**
+
 - 24h volume: >$500K sustained
 - Holders: >10,000 unique wallets
 - TVL or protocol revenue: depends on category

@@ -123,8 +123,6 @@ enforces the release math and bounds; it does not by itself enforce who your
 keeper is. Wiring a direct Pyth/Switchboard read is the natural next step
 before mainnet use; see the two paths below.
 
-
-
 The gate check reads the same on-chain price/LP oracle data that
 `post-launch-monitoring.md`'s off-chain sell-pressure analyzer computes.
 Two implementation paths:

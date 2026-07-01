@@ -13,6 +13,9 @@ Load the agent below that matches the current task. Never load more than one at 
 |------|-------|-------|
 | End-to-end TGE coordination, war room, 40-point readiness scoring | `agents/tge-orchestrator.md` | opus |
 | Governance token design, Realms DAO, vote-escrow (veToken) | `agents/governance-architect.md` | sonnet |
+| Securities risk-flagging, Howey analysis, jurisdiction/OFAC gating | `agents/legal-compliance-agent.md` | sonnet |
+| Pool architecture, market making, exchange listing strategy | `agents/liquidity-market-maker.md` | sonnet |
+| Post-launch monitoring, death-spiral detection, 72-hour crisis response | `agents/post-launch-crisis-agent.md` | opus |
 
 ---
 
@@ -55,8 +58,12 @@ Stage 7 — SUSTAIN       Week-2 death prevention, community, emissions governan
 |---|---|
 | Token creation (Token-2022, extensions, multisig) | `skill/spl-token-setup.md` |
 | Tokenomics design, vesting, supply model | `skill/tokenomics-design.md` |
+| Vesting gated on market health, not a blind calendar ★ | `skill/vesting-circuit-breaker.md` |
+| Probability-of-survival Monte Carlo simulation ★ | `skill/reflexive-simulation.md` |
 | Airdrop, Merkle distributor, anti-sybil | `skill/airdrop-orchestration.md` |
+| Conviction-weighted airdrop scoring beyond binary sybil filters ★ | `skill/conviction-scoring.md` |
 | Liquidity seeding (Meteora, Orca, Alpha Vault) | `skill/liquidity-seeding.md` |
+| Disclosed, bounded on-chain buyback vault ★ | `skill/stabilization-vault.md` |
 | Market making, spread, depth management | `skill/market-making.md` |
 | Jupiter + CEX listing strategy | `skill/listing-strategy.md` |
 | Post-launch monitoring (Helius, Birdeye, death spiral) | `skill/post-launch-monitoring.md` |
@@ -64,6 +71,7 @@ Stage 7 — SUSTAIN       Week-2 death prevention, community, emissions governan
 | Legal, Howey, OFAC, MiCA | `skill/legal-compliance.md` |
 | DAO governance, Realms, vote-escrow, SPL Governance | `skill/governance-mechanics.md` |
 | Compressed NFTs, NFT-as-token, collection TGE | `skill/nft-launch.md` |
+| Wallet/authority security (mint/freeze/upgrade custody) | `skill/wallet-tge-security.md` |
 | Cross-skill event signals | `ecosystem-signals.md` |
 
 ---

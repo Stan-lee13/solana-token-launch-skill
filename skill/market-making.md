@@ -5,6 +5,7 @@ Healthy markets don't happen by accident. This skill covers self-market-making o
 ## Why this matters at launch
 
 Without active market making:
+
 - Bid-ask spread blows out to 5–20%
 - Users get ruinous price impact on any meaningful trade
 - Birdeye/DexScreener shows low volume → filtered out of discovery
@@ -176,8 +177,8 @@ Exit Terms:
 
 | MM | Tier | Best for | Contact |
 |---|---|---|---|
-| Wintermute | 1 | Large launches ($100M+ FDV) | bd@wintermute.com |
-| Flowdesk | 2 | Mid-tier ($20-100M FDV) | contact@flowdesk.co |
+| Wintermute | 1 | Large launches ($100M+ FDV) | <bd@wintermute.com> |
+| Flowdesk | 2 | Mid-tier ($20-100M FDV) | <contact@flowdesk.co> |
 | Kairon Labs | 2 | Solana-native, smaller budget | kaironlabs.com |
 | GSR | 1-2 | DeFi-native, deep Solana | gsr.io |
 | Atrix | Budget | Self-service, Solana only | atrix.finance |

@@ -6,8 +6,9 @@
 > the WALLET_KEY_COMPROMISED response at TGE.
 >
 > This is the Token Launch-specific extension of:
->   - `solana-ux-skill/skill/wallet-engineering.md` (architecture principles)
->   - `solana-incident-response-skill/skill/wallet-security.md` (compromise response)
+>
+> - `solana-ux-skill/skill/wallet-engineering.md` (architecture principles)
+> - `solana-incident-response-skill/skill/wallet-security.md` (compromise response)
 
 ---
 
@@ -408,6 +409,7 @@ export function buildTgeKeyCompromisedSignal(
 Run this monthly for the first year post-TGE.
 
 **Monthly Authority Audit**
+
 - [ ] All Squads multisig signers still have access to their keys
 - [ ] No multisig signer's device/key has been compromised or lost
 - [ ] Unused authorities have been revoked (old mint authority from setup, etc.)
@@ -415,17 +417,20 @@ Run this monthly for the first year post-TGE.
 - [ ] Treasury spending logged and consistent with governance approvals
 
 **Crank/Automation Keypairs**
+
 - [ ] All crank keys are in KMS/Vault (none in `.env` or CI secrets)
 - [ ] Crank keys rotated (monthly minimum)
 - [ ] Fee payer balances sufficient (>48h runway each)
 - [ ] Distribution pause key tested on devnet (verify it still works)
 
 **Vesting Oversight**
+
 - [ ] Upcoming cliff dates known and prepared for sell pressure
 - [ ] Each recipient's wallet address verified (they haven't changed wallets)
 - [ ] Vesting contract admin key secured (in multisig)
 
 **Cross-Skill Monitoring**
+
 - [ ] `TGE_LAUNCHED` signal confirmed received by Observability skill
 - [ ] Wallet security monitoring active (wallet-observability.md alerts live)
 - [ ] `WALLET_KEY_COMPROMISED` signal handler tested in staging

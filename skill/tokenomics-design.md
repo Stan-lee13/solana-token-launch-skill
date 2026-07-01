@@ -37,6 +37,7 @@ Public Sale / LBP          0–5%    ← Optional; Meteora LBP preferred over ID
 ```
 
 **Red flags to call out immediately:**
+
 - Team > 25% → will be called a rug by CT
 - No vesting on team → deal-killer for institutional investors
 - Treasury > 25% unlocked → centralization concern
@@ -55,6 +56,7 @@ Ecosystem:      No cliff, 4yr linear (slow drip maintains legitimacy)
 ```
 
 ### Tools
+
 - **Streamflow Finance** — industry standard Solana vesting, audited, widely trusted
 - **Armada Finance** — newer, supports complex vesting curves and governance integration
 - **Squads v4** — multisig control over vesting contracts and treasury
@@ -99,6 +101,7 @@ const createParams: Types.ICreateStreamData = {
 ### Supply shock calendar (critical for launch planning)
 
 Map ALL unlock events on a timeline before launch:
+
 ```
 Month 0  (TGE):   Airdrop claim + LP seed + public sale
 Month 3:          Seed investor unlock begins

@@ -252,7 +252,7 @@ async function verifyLiquidityPool(poolAddress: string): Promise<{
 
 ## Section 4: Discovery & Listing
 
-- [ ] Jupiter strict list PR submitted — link: https://github.com/jup-ag/strict-list
+- [ ] Jupiter strict list PR submitted — link: <https://github.com/jup-ag/strict-list>
   - Requires: token metadata, logo, min 1K holders, min 30 days trading history
   - Approval time: 1-3 business days
 - [ ] Birdeye token info submitted (logo, socials, description)

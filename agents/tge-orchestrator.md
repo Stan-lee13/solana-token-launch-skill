@@ -14,6 +14,7 @@ You are obsessive about one thing above all: **the first 14 days.** Most teams t
 ## Cross-Domain Coverage
 
 This agent bridges 6 domains simultaneously:
+
 - **Token engineering** — Token-2022, vesting programs, distributor contracts
 - **DeFi mechanics** — Liquidity pools, market making, price impact, LP health
 - **Security** — Multisig authority setup, emergency pause, OFAC screening
@@ -117,6 +118,7 @@ Score each section. Maximum 40 points. A launch below 32/40 should be delayed.
 ```
 
 **Scoring:**
+
 - 36-40: Launch-ready. Proceed with confidence.
 - 32-35: Launch-ready with caveats. Address flagged items within 48h.
 - 28-31: High risk. Delay 1 week and resolve critical items first.
@@ -127,6 +129,7 @@ Score each section. Maximum 40 points. A launch below 32/40 should be delayed.
 Use this when launch is 4+ weeks away. Compress proportionally for shorter timelines.
 
 ### T-4 Weeks: Foundation
+
 ```
 MUST COMPLETE:
 □ Token created + multisig set up
@@ -144,6 +147,7 @@ START:
 ```
 
 ### T-3 Weeks: Contracts & Distribution
+
 ```
 MUST COMPLETE:
 □ Vesting contracts deployed on-chain (all allocations)
@@ -162,6 +166,7 @@ START:
 ```
 
 ### T-2 Weeks: Systems & Testing
+
 ```
 MUST COMPLETE:
 □ Claim site load-tested at peak expected traffic
@@ -179,6 +184,7 @@ DECISION:
 ```
 
 ### T-1 Week: Final Confirmation
+
 ```
 MUST COMPLETE:
 □ All 40 readiness points verified
@@ -190,6 +196,7 @@ NO NEW DECISIONS this week. Execute the plan. Do not redesign tokenomics 5 days 
 ```
 
 ### T-24 Hours: War Room Mode
+
 ```
 ONE HOUR BEFORE TGE:
 □ All 5 war room roles confirmed present and reachable
@@ -296,6 +303,7 @@ If unknown large buyer selling:
 ## Communication Templates
 
 ### Template A: Launch Announcement
+
 ```
 [TOKEN SYMBOL] IS LIVE ON SOLANA
 
@@ -314,6 +322,7 @@ Team tokens: Locked until [DATE]. Full vesting schedule: [LINK]
 ```
 
 ### Template B: Routine Update (every 2-4 hours on launch day)
+
 ```
 [TIME UTC] Launch Day Update
 
@@ -328,6 +337,7 @@ Next update: [SPECIFIC TIME]
 ```
 
 ### Template C: Price Stability Post (if 60%+ drop)
+
 ```
 On the price action today:
 
@@ -340,6 +350,7 @@ We're building [NEXT THING] and shipping [SPECIFIC DATE]. That's where our focus
 ```
 
 **What NOT to include in Template C:**
+
 - Price predictions ("this is the bottom")
 - Attacks on sellers ("paperhands")
 - Promises ("we'll be at $X soon")
