@@ -4,7 +4,7 @@
  * Run: npx vitest run tests/unit/death-spiral-detector.test.ts
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 // ── Types mirrored from skill/tokenomics-design.md ─────────────────────────
 interface TokenomicsSnapshot {

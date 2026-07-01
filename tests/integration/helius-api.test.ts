@@ -14,7 +14,7 @@
  *   SOLANA_CLUSTER    — "mainnet-beta" | "devnet"
  */
 
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect } from "vitest";
 
 const SKIP = !process.env.INTEGRATION;
 
@@ -37,7 +37,7 @@ describe.skipIf(SKIP)("Helius API — getTokenAccounts", () => {
       }
     );
     expect(res.status).toBe(200);
-    const data = await res.json();
+    const data = (await res.json()) as any;
     expect(data).toHaveProperty("result");
     expect(data.result).toHaveProperty("token_accounts");
     expect(Array.isArray(data.result.token_accounts)).toBe(true);
@@ -57,7 +57,7 @@ describe.skipIf(SKIP)("Helius API — getTokenAccounts", () => {
         }),
       }
     );
-    const data = await res.json();
+    const data = (await res.json()) as any;
     for (const account of data.result.token_accounts) {
       expect(account).toHaveProperty("owner");
       expect(account).toHaveProperty("amount");
@@ -79,7 +79,7 @@ describe.skipIf(SKIP)("Helius API — getTokenAccounts", () => {
         }),
       }
     );
-    const data = await res.json();
+    const data = (await res.json()) as any;
     expect(data.result.token_accounts.length).toBeLessThanOrEqual(3);
   }, 15_000);
 
@@ -93,7 +93,7 @@ describe.skipIf(SKIP)("Helius API — getTokenAccounts", () => {
       }
     );
     // Helius returns 401 or an error in the JSON body for invalid keys
-    const data = await res.json();
+    const data = (await res.json()) as any;
     const hasError = res.status === 401 || !!data.error;
     expect(hasError).toBe(true);
   }, 10_000);
@@ -107,7 +107,7 @@ describe.skipIf(SKIP)("Jupiter price API", () => {
   it("returns a price for SOL/USDC", async () => {
     const res = await fetch(`https://price.jup.ag/v6/price?ids=${SOL}&vsToken=${USDC}`);
     expect(res.status).toBe(200);
-    const data = await res.json();
+    const data = (await res.json()) as any;
     expect(data.data).toHaveProperty(SOL);
     const price = data.data[SOL].price;
     expect(typeof price).toBe("number");

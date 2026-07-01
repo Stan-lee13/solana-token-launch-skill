@@ -106,6 +106,17 @@ Use for: Bubblegum cNFT collection setup, bulk mint airdrops, Genesis NFT → ve
 
 ---
 
+### Wallet security (authority custody, mint/freeze/upgrade lockdown)
+→ Load `skill/wallet-tge-security.md`
+
+Use for: Pre-TGE authority wallet checklist (mint/freeze/upgrade → Squads v4 multisig),
+airdrop distributor treasury custody, vesting contract wallet controls, and the
+`WALLET_KEY_COMPROMISED` response if a launch wallet is compromised at or after TGE.
+This is the TGE-specific extension of the ecosystem-wide A1-A8 wallet threat model
+shared with solana-ux-skill and solana-incident-response-skill.
+
+---
+
 ### Cross-skill signals
 → Load `ecosystem-signals.md`
 
@@ -125,3 +136,4 @@ Use for: Firing `TGE_LAUNCHED` to Observability at T+0, handling `DEPIN_TGE_READ
 | No legal opinion | Flag if launching to US persons without Howey analysis |
 | Metadata on IPFS without pinning | Will 404 in 12-24 months |
 | No `TGE_LAUNCHED` signal fired | Observability is not monitoring — load ecosystem-signals.md |
+| Mint authority not on Squads v4 multisig at TGE | HARD BLOCK — load `skill/wallet-tge-security.md`, do not launch |

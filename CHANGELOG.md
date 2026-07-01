@@ -7,6 +7,43 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — Critical: skill was not runnable out of the box
+- **`package.json` was missing entirely** — `npm install`, `npm test`, and the Dockerfile's
+  `npm ci` all failed immediately. This is the exact command the README's own "zero setup"
+  quickstart tells users to run. Added `package.json` with `vitest`, `@vitest/coverage-v8`,
+  `typescript`, `@types/node`, and `test`/`build`/`simulate` scripts.
+- **`tsconfig.json` was missing** — `npx tsc --noEmit` (used in the Dockerfile and CI) had
+  nothing to compile against. Added a strict TS config covering `tests/**` and `src/**`.
+- **`scripts/simulate_tokenomics.py` was referenced everywhere (Dockerfile CMD, CI's Python
+  job, `requirements.txt`, the CI structure-validation check) but did not exist.** Implemented
+  it as a stdlib-only, mypy-clean CLI (`--months`, `--json`, `--chart`) that mirrors the TS
+  reference simulation in `tests/regression/tokenomics-simulation.test.ts` exactly — the two
+  must be kept in sync by design.
+- **CI had never actually run** — the workflow lived at `docs/ci.yml` instead of
+  `.github/workflows/ci.yml`, the only path GitHub Actions reads. Moved it into place. This
+  explains why the missing `package.json` was never caught.
+- **`skill/wallet-tge-security.md` (431 lines, hard-block mint-authority checklist) existed
+  on disk but was never wired into the root `SKILL.md` routing table** — an agent loading
+  this skill would never discover it. Added its routing entry and a red-flag row.
+
+### Fixed — 3 real bugs caught by actually running the test suite (not just reading it)
+- `tests/regression/tokenomics-simulation.test.ts` — "100% buyback" deflationary-scenario
+  test used a *high* token price ($10), but burn-per-dollar scales inversely with price, so
+  that config was mathematically inflationary (+4.95M/mo), not deflationary. Test's own
+  comment predicted the correct (wrong) result but the assertion still expected the opposite.
+  Corrected the scenario to use a low price ($0.05), which is actually deflationary.
+- `tests/regression/tokenomics-simulation.test.ts` — month-12 snapshot asserted
+  `cumulative_burned > 5,000,000`, but the model is fully deterministic and always produces
+  exactly 3,000,000 at the default config. Corrected to the true value.
+- `tests/unit/sell-pressure-analyzer.test.ts` — the `HEAVY_DISTRIBUTION` test gave all 8
+  sellers the *same* timestamp, which accidentally satisfied the 30-minute coordination
+  window and forced the verdict to `COORDINATED_EXIT` before the `HEAVY_DISTRIBUTION` branch
+  was ever reached. Spread the seller timestamps 1h apart so the scenario actually represents
+  uncoordinated distribution (verdict precedence logic itself was correct and untouched).
+- Removed 6 files' worth of dead code / unused imports (`hashLeaf`, `execSync`, `beforeAll`,
+  `beforeEach`, `vi`) and 8 `.json()` return-type errors that failed `tsc --noEmit --strict`
+  under the newly-added `tsconfig.json`.
+
 ### Added
 - `tests/unit/death-spiral-detector.test.ts` — 8 unit tests for death spiral detection logic
 - `tests/unit/sell-pressure-analyzer.test.ts` — 10 unit tests for sell pressure verdict computation

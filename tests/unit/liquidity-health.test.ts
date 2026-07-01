@@ -4,7 +4,7 @@
  * Run: npx vitest run tests/unit/liquidity-health.test.ts
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 
 // ── Types from post-launch-monitoring.md ─────────────────────────────────────
 interface LPHealthReport {

@@ -1,10 +1,12 @@
 # CI/CD Pipeline
 
-This skill ships with a full GitHub Actions CI pipeline.
+This skill ships with a full GitHub Actions CI pipeline, active on this repo at
+`.github/workflows/ci.yml` (every push/PR to `main`/`develop`).
 
-## Setup (one-time)
+## Using this pipeline in your own fork or downstream project
 
-Copy `.github/workflows/ci.yml` from this file into your fork:
+The template below is duplicated at `docs/ci.yml` so other projects that install this skill
+can copy it in without digging through `.github/`:
 
 ```bash
 mkdir -p .github/workflows

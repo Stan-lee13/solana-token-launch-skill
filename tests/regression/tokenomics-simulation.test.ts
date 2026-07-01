@@ -9,7 +9,6 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { execSync } from "child_process";
 
 // ── TypeScript re-implementation of core simulation logic (for regression) ───
 // This mirrors scripts/simulate_tokenomics.py — if they diverge, tests fail
@@ -169,10 +168,13 @@ describe("tokenomics simulation", () => {
   });
 
   it("100% buyback pct burns more than it emits (deflationary scenario)", () => {
-    // $500K revenue × 100% buyback ÷ $1 price = 500K tokens burned
-    // Emission = 0.5% × 1B = 5M tokens/month → net = +4.5M (still inflationary at this price)
-    // But at $10 price: 50K burned ÷ 500K emitted → net deflationary
-    const config = { ...DEFAULT_CONFIG, fee_buyback_pct: 1.0, token_price_usd: 10.0 };
+    // Burn-per-dollar scales INVERSELY with price: tokens_burned = (revenue × buyback%) / price.
+    // Emission is fixed in TOKEN terms (0.5% × 1B = 5M/month) regardless of price, so to make
+    // burns outpace emission at a fixed $500K revenue budget, price must be LOW, not high:
+    //   $500K revenue × 100% buyback ÷ $0.05 price = 10M tokens burned > 5M emitted → deflationary
+    // (At $10 price the same budget only buys 50K tokens — nowhere near enough to offset 5M
+    // emitted, which is why this scenario must use a low price, not a high one.)
+    const config = { ...DEFAULT_CONFIG, fee_buyback_pct: 1.0, token_price_usd: 0.05 };
     const results = simulate(config, 6);
     for (const r of results) {
       expect(r.net_monthly_emission).toBeLessThan(0); // net deflationary
@@ -183,8 +185,9 @@ describe("tokenomics simulation", () => {
   it("month-12 snapshot matches known-good values", () => {
     const results = simulate(DEFAULT_CONFIG, 12);
     const month12 = results[11];
-    // Snapshot: update these values if simulation logic intentionally changes
-    expect(month12.cumulative_burned).toBeGreaterThan(5_000_000);
+    // Snapshot: update these values if simulation logic intentionally changes.
+    // Deterministic: $500K x 50% buyback / $1 price = 250K tokens burned/month x 12 = 3,000,000.
+    expect(month12.cumulative_burned).toBe(3_000_000);
     expect(month12.circulating_supply).toBeGreaterThan(200_000_000);
     expect(month12.circulating_supply).toBeLessThan(400_000_000);
   });

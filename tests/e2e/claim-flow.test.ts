@@ -15,19 +15,10 @@
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
-import { createHash } from "crypto";
 
 const SKIP = !process.env.E2E;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-function hashLeaf(wallet: string, amount: bigint): Buffer {
-  const walletBuf = Buffer.from(wallet);
-  const amountBuf = Buffer.alloc(8);
-  amountBuf.writeBigUInt64LE(amount);
-  const inner = createHash("sha256").update(walletBuf).update(amountBuf).digest();
-  return createHash("sha256").update(inner).digest();
-}
-
 // ── Claim API contract tests (mock server) ────────────────────────────────────
 // These run without E2E=1 — they test the API contract shape against a mock
 describe("Claim API — contract validation", () => {
@@ -88,7 +79,7 @@ describe.skipIf(SKIP)("Claim flow — devnet E2E", () => {
       body: JSON.stringify({ wallet: process.env.TEST_WALLET_ADDRESS }),
     });
     expect(res.status).toBe(200);
-    const data = await res.json();
+    const data = (await res.json()) as any;
     expect(data).toHaveProperty("eligible");
     expect(typeof data.eligible).toBe("boolean");
   }, 15_000);
@@ -100,7 +91,7 @@ describe.skipIf(SKIP)("Claim flow — devnet E2E", () => {
       body: JSON.stringify({ wallet: "11111111111111111111111111111111" }), // system program
     });
     expect(res.status).toBe(200);
-    const data = await res.json();
+    const data = (await res.json()) as any;
     expect(data.eligible).toBe(false);
   }, 15_000);
 

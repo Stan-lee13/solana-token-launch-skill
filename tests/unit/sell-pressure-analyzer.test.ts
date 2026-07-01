@@ -4,7 +4,7 @@
  * Run: npx vitest run tests/unit/sell-pressure-analyzer.test.ts
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type Verdict = "HEALTHY" | "WATCH" | "HEAVY_DISTRIBUTION" | "COORDINATED_EXIT";
@@ -84,13 +84,20 @@ describe("sell pressure verdict", () => {
   });
 
   it("HEAVY_DISTRIBUTION when ratio <0.5 and >5 large sellers", () => {
+    // Each seller needs a DISTINCT timestamp spaced well outside the 30-min (1800s)
+    // coordination window — otherwise every seller collapses into one coordinated
+    // cluster and the verdict short-circuits to COORDINATED_EXIT before ever
+    // reaching the HEAVY_DISTRIBUTION branch (that's a *correct* precedence: an
+    // organized dump is more severe than generic distribution — the test data
+    // just has to actually represent uncoordinated selling).
     const sellers: SellerData[] = Array.from({ length: 8 }, (_, i) => ({
       wallet: `wallet${i}`, amountUsd: 15_000, txCount: 1,
-      timestamps: [NOW - 3600],
+      timestamps: [NOW - 3600 * (i + 1)], // 1h, 2h, 3h... apart — never clusters
     }));
     const r = computeVerdict(20_000, 120_000, sellers);
     expect(r.verdict).toBe("HEAVY_DISTRIBUTION");
     expect(r.largeSellerCount).toBe(8);
+    expect(r.isOrganized).toBe(false);
   });
 
   it("COORDINATED_EXIT when 3+ large sellers act within 30-min window", () => {
