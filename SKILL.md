@@ -49,6 +49,8 @@ Use for: Allocation framework, supply sizing, vesting architecture (Streamflow),
 Use for: Gating scheduled team/investor unlocks on real-time market health instead of
 a blind calendar date. No vesting scheme in the ecosystem currently connects unlock
 timing to death-spiral risk — this is the fix. Bounded, disclosed, non-discretionary.
+Real Anchor program at `programs/vesting-circuit-breaker/` — compiles clean with
+`cargo check`, not pseudocode.
 
 ---
 
@@ -95,6 +97,8 @@ disclosed, on-chain, mechanically-bounded buyback vault funded from TGE proceeds
 that defends price during the highest-volatility post-launch window. Nothing in
 the current ecosystem documents this pattern; most teams do informal, undisclosed
 buybacks that read as market manipulation because there's no disclosed rule set.
+Real Anchor program at `programs/stabilization-vault/` — compiles clean with
+`cargo check`, not pseudocode.
 
 ---
 

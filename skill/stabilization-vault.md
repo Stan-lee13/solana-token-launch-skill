@@ -111,6 +111,25 @@ defensible instead of "the team manipulating the market" is:
    a tx signature. Holders don't have to trust the team's word; they can
    verify the vault behaved exactly per its disclosed rules.
 
+## Anchor implementation
+
+**This is now a real, compiled program**, not pseudocode — `programs/stabilization-vault/src/lib.rs`.
+Verified with `cargo check` (Anchor 0.30.1, stable Rust) — zero compile errors.
+`execute_buyback` enforces all four bounds atomically on-chain: lifetime cap
+(`max_buybacks_total`), trigger threshold, cooldown, and per-trigger cap as a
+percentage of the REMAINING vault (not the original allocation — this means
+each successive buyback is smaller in absolute terms, a deliberate decay that
+prevents the vault draining itself in a handful of triggers during a sustained
+crash). Emits `StabilizationTriggered` with the full disclosed state for
+independent verification.
+
+**Disclosed scope limit:** the actual DEX swap (spending vault-held USDC/SOL to
+buy the token) is left as an integration point — wire it to your Meteora
+DLMM / Orca Whirlpool client per `liquidity-seeding.md`. The instruction's job
+is enforcing the bounded, auditable DECISION of how much to buy back and when;
+execution routing is pool-specific and deliberately kept out of the
+trust-critical bound-enforcement logic.
+
 ## Legal disclosure requirement
 
 Cross-reference `legal-compliance.md` before implementing this for any token

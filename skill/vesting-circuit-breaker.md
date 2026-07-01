@@ -107,6 +107,24 @@ tokenomics design" and "the team moved the goalposts."
 
 ## Anchor implementation notes
 
+**This is now a real, compiled program**, not pseudocode — `programs/vesting-circuit-breaker/src/lib.rs`.
+Verified with `cargo check` (Anchor 0.30.1, stable Rust) — zero compile errors.
+Instructions: `initialize_gate`, `evaluate_gate` (keeper-signed), and
+`release_matured_deferral` (permissionless once `max_deferral_seconds` elapses —
+the hard ceiling that guarantees recipients are never left in indefinite limbo).
+Emits `VestingGateEvaluated` and, on 2+ consecutive gated events,
+`VestingRepeatedlyGated` for the `ecosystem-signals.md` escalation path.
+
+**Disclosed scope limit:** the program takes `current_drawdown_bps` as a
+keeper-signed instruction argument, not a live on-chain oracle read (the
+"off-chain keeper + on-chain attestation" path below). The keeper authority
+MUST be a Squads v4 multisig PDA per `wallet-tge-security.md` — this program
+enforces the release math and bounds; it does not by itself enforce who your
+keeper is. Wiring a direct Pyth/Switchboard read is the natural next step
+before mainnet use; see the two paths below.
+
+
+
 The gate check reads the same on-chain price/LP oracle data that
 `post-launch-monitoring.md`'s off-chain sell-pressure analyzer computes.
 Two implementation paths:
