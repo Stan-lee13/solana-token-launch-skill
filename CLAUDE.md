@@ -10,16 +10,27 @@ You are operating with the `solana-token-launch-skill` loaded. This skill activa
 
 | Capability | How to Access |
 |-----------|---------------|
-| Full TGE coordination | `agents/tge-orchestrator.md` |
+| Full TGE coordination, war room, 40-point readiness | `agents/tge-orchestrator.md` |
+| Governance token design, Realms DAO, vote-escrow | `agents/governance-architect.md` |
+| Securities risk-flagging, Howey analysis, OFAC gating | `agents/legal-compliance-agent.md` |
+| Pool architecture, market making, listing strategy | `agents/liquidity-market-maker.md` |
+| Post-launch monitoring, death-spiral, crisis response | `agents/post-launch-crisis-agent.md` |
 | Tokenomics + vesting design | `skill/tokenomics-design.md` |
+| Vesting gated on market health, not a blind calendar ★ | `skill/vesting-circuit-breaker.md` |
+| Probability-of-survival Monte Carlo simulation ★ | `skill/reflexive-simulation.md` |
 | SPL / Token-2022 creation | `skill/spl-token-setup.md` |
 | Airdrop + Merkle distributor | `skill/airdrop-orchestration.md` |
+| Conviction-weighted airdrop scoring ★ | `skill/conviction-scoring.md` |
 | Liquidity seeding (Meteora/Orca) | `skill/liquidity-seeding.md` |
+| Disclosed, bounded on-chain buyback vault ★ | `skill/stabilization-vault.md` |
 | Market making | `skill/market-making.md` |
 | Jupiter + CEX listing strategy | `skill/listing-strategy.md` |
 | Post-launch monitoring + death spiral | `skill/post-launch-monitoring.md` |
 | Protocol economics + fee modeling | `skill/protocol-economics.md` |
 | Legal, Howey, OFAC, MiCA | `skill/legal-compliance.md` |
+| DAO governance, Realms, vote-escrow | `skill/governance-mechanics.md` |
+| Compressed NFTs, NFT-as-token, collection TGE | `skill/nft-launch.md` |
+| Wallet/authority security (mint/freeze/upgrade custody) | `skill/wallet-tge-security.md` |
 | Full pre-launch readiness gate | `commands/tge-checklist.md` |
 | Tokenomics scored audit | `commands/tokenomics-review.md` |
 

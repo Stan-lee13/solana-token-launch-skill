@@ -8,14 +8,26 @@
  */
 
 import { describe, it, expect } from "vitest";
+import bs58 from "bs58";
 import { hashLeaf, buildMerkleTree } from "./merkle-distributor";
 
 // ── Test data ────────────────────────────────────────────────────────────────
+// Wallets are base58-encoded, matching real Solana pubkeys (32 raw bytes)
+// and the format documented in skill/airdrop-orchestration.md's claim API.
+// Previously these were fake base64 strings that happened to round-trip
+// through the (buggy) base64 decoder — this would have silently broken on
+// any real base58 wallet address. See BUG FIX note in merkle-distributor.ts.
+function fakeWallet(seed: string): string {
+  const bytes = Buffer.alloc(32);
+  Buffer.from(seed).copy(bytes);
+  return bs58.encode(bytes);
+}
+
 const ALLOCATIONS: Array<{ wallet: string; amount: bigint }> = [
-  { wallet: Buffer.from("wallet1").toString("base64"), amount: 1_000_000_000n },
-  { wallet: Buffer.from("wallet2").toString("base64"), amount: 2_000_000_000n },
-  { wallet: Buffer.from("wallet3").toString("base64"), amount: 500_000_000n },
-  { wallet: Buffer.from("wallet4").toString("base64"), amount: 750_000_000n },
+  { wallet: fakeWallet("wallet1"), amount: 1_000_000_000n },
+  { wallet: fakeWallet("wallet2"), amount: 2_000_000_000n },
+  { wallet: fakeWallet("wallet3"), amount: 500_000_000n },
+  { wallet: fakeWallet("wallet4"), amount: 750_000_000n },
 ];
 
 // ── Tests ────────────────────────────────────────────────────────────────────
