@@ -12,6 +12,7 @@
  *   TEST_TOKEN_MINT   — A real SPL token mint (e.g., USDC devnet)
  *   TEST_POOL_ADDRESS — A Meteora DLMM pool address
  *   SOLANA_CLUSTER    — "mainnet-beta" | "devnet"
+ *   JUPITER_API_KEY   — optional; Jupiter Price API v3 works anonymously at a lower rate limit
  */
 
 import { describe, it, expect } from "vitest";
@@ -100,16 +101,25 @@ describe.skipIf(SKIP)("Helius API — getTokenAccounts", () => {
 });
 
 // ── Jupiter price API tests ──────────────────────────────────────────────────
-describe.skipIf(SKIP)("Jupiter price API", () => {
-  const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-  const SOL  = "So11111111111111111111111111111111111111112";
+// Jupiter's v6 Price API (price.jup.ag/v6/price) was sunset — this repo
+// previously pointed at it, which would now 404/fail against a dead host.
+// Current API is Price API V3 on the Developer Platform gateway: no more
+// `vsToken` param (V3 is USD-only), response keyed by mint with `usdPrice`
+// instead of `data[mint].price`. See https://dev.jup.ag/docs/price.
+// An API key is optional for light usage but strongly recommended — pass one
+// via JUPITER_API_KEY to avoid the anonymous tier's tighter rate limit.
+describe.skipIf(SKIP)("Jupiter price API v3", () => {
+  const SOL = "So11111111111111111111111111111111111111112";
+  const authHeaders: Record<string, string> = process.env.JUPITER_API_KEY
+    ? { "x-api-key": process.env.JUPITER_API_KEY }
+    : {};
 
-  it("returns a price for SOL/USDC", async () => {
-    const res = await fetch(`https://price.jup.ag/v6/price?ids=${SOL}&vsToken=${USDC}`);
+  it("returns a price for SOL", async () => {
+    const res = await fetch(`https://api.jup.ag/price/v3?ids=${SOL}`, { headers: authHeaders });
     expect(res.status).toBe(200);
     const data = (await res.json()) as any;
-    expect(data.data).toHaveProperty(SOL);
-    const price = data.data[SOL].price;
+    expect(data).toHaveProperty(SOL);
+    const price = data[SOL].usdPrice;
     expect(typeof price).toBe("number");
     expect(price).toBeGreaterThan(0);
     expect(price).toBeLessThan(10_000); // SOL should not be >$10K
@@ -118,11 +128,11 @@ describe.skipIf(SKIP)("Jupiter price API", () => {
   it("rate limit: 10 sequential requests complete without 429", async () => {
     const results: number[] = [];
     for (let i = 0; i < 10; i++) {
-      const res = await fetch(`https://price.jup.ag/v6/price?ids=${SOL}`);
+      const res = await fetch(`https://api.jup.ag/price/v3?ids=${SOL}`, { headers: authHeaders });
       results.push(res.status);
       await new Promise(r => setTimeout(r, 100)); // 100ms between calls
     }
-    // All should succeed (200) — we're well within the 60 req/min limit
+    // All should succeed (200) — we're well within the documented rate limit
     expect(results.every(s => s === 200)).toBe(true);
   }, 30_000);
 });

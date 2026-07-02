@@ -7,6 +7,51 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — Runtime-verified hardening pass (found only by actually running the skill, not by reading it)
+
+- **Security**: bumped `vitest`/`vite`/`esbuild` to patch 6 known vulnerabilities
+  (2 critical) in the dev/test toolchain.
+- **Coverage reporting was silently broken (0% pass, exit 0)**: the vitest 3.x
+  v8 provider's AST-based remapping excludes any file matched by `test.include`
+  from ever being a coverage target — even when `coverage.include` also lists
+  it. This repo's pattern of keeping the implementation and its tests in one
+  `*.test.ts` file (which worked fine on vitest ^2.1.8) silently produced 0%
+  coverage on every metric the moment vitest was bumped to ^3.2.6 for the CVE
+  fix above, with the threshold gate still passing (0% ≥ nothing enforced
+  correctly). Split 6 files (`conviction-scoring`, `death-spiral-detector`,
+  `liquidity-health`, `merkle-distributor`, `sell-pressure-analyzer`,
+  `tokenomics-simulation`) into real sibling implementation modules imported
+  by their `.test.ts` files. Coverage is now honestly reported: 100%
+  statements/functions/lines, 91.8% branches, against 60/55/60/60 thresholds.
+- **Tokenomics regression test's own docstring was false**: it claimed to run
+  `scripts/simulate_tokenomics.py` via `child_process` and cross-check its
+  output against the TS mirror — it never actually did, so the two
+  implementations could silently drift apart forever without any test
+  catching it. Added a real `execFileSync`-based cross-language parity suite
+  (3 new tests) that runs the actual Python script and diffs every field,
+  month-by-month, against the TS `simulate()` output.
+- **Vesting Circuit Breaker (Anchor program) — missing tier-ordering check**:
+  `initialize_gate` validated each of `watch_tier_release_bps` and
+  `spiral_tier_release_bps` individually against 10,000 bps, but nothing
+  stopped `spiral_tier_release_bps` from being configured *higher* than
+  `watch_tier_release_bps` — which would release MORE of the scheduled
+  unlock during a market spiral than during a mere watch state, exactly
+  backwards from the entire purpose of the program. Added
+  `VcbError::InvalidTierOrdering` and a `require!` enforcing
+  `spiral_tier_release_bps <= watch_tier_release_bps`. Verified with a fresh
+  `cargo check --workspace` + `cargo clippy` (0 errors, only benign
+  anchor-macro cfg warnings) — the Rust toolchain was installed specifically
+  to catch this class of issue by actually compiling the programs rather than
+  reading them.
+- **Two dead Jupiter API endpoints**: `price.jup.ag/v6/price` (Price API,
+  used in `tests/integration/helius-api.test.ts`) and
+  `quote-api.jup.ag/v6/quote` (Swap API, used in `commands/tge-checklist.md`'s
+  liquidity-verification snippet) are both sunset. Updated to the current
+  Jupiter Developer Platform endpoints: `api.jup.ag/price/v3` (USD-only,
+  `usdPrice` field, no `vsToken` param) and `api.jup.ag/swap/v1/quote`,
+  with optional `x-api-key` support.
+
+
 ### Added — Reflexivity Defense Stack (4 new systems — genuine ecosystem gaps, not documentation depth)
 
 - **`skill/vesting-circuit-breaker.md`** — gates scheduled team/investor unlocks on

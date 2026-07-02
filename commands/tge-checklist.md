@@ -219,9 +219,13 @@ async function verifyLiquidityPool(poolAddress: string): Promise<{
   const activeBinPrice = pool.fromPricePerLamport(Number(activeBin.price));
 
   // ── Jupiter routing check ──────────────────────────────────────────────
-  // Jupiter auto-discovers pools — verify your token is routable
+  // Jupiter auto-discovers pools — verify your token is routable.
+  // quote-api.jup.ag/v6 is sunset; current endpoint is api.jup.ag/swap/v1/quote
+  // (Jupiter Developer Platform — see dev.jup.ag/docs/swap). An API key is
+  // optional for light usage but recommended in production (pass as an
+  // x-api-key header) to avoid the anonymous-tier rate limit.
   const jupiterQuoteCheck = await fetch(
-    `https://quote-api.jup.ag/v6/quote?inputMint=So11111111111111111111111111111111111111112&outputMint=${pool.lbPair.tokenXMint.toBase58()}&amount=1000000000&slippageBps=100`
+    `https://api.jup.ag/swap/v1/quote?inputMint=So11111111111111111111111111111111111111112&outputMint=${pool.lbPair.tokenXMint.toBase58()}&amount=1000000000&slippageBps=100`
   ).then(r => r.json()).catch(() => null);
 
   const jupiterVerified = jupiterQuoteCheck && !jupiterQuoteCheck.error;

@@ -1,7 +1,7 @@
 {
   "name": "solana-token-launch-skill",
   "version": "1.0.0",
-  "description": "Token Generation Event (TGE) orchestration skill for Solana — tokenomics design, airdrop/merkle distribution, liquidity seeding, death-spiral detection, and post-launch monitoring.",
+  "description": "Token Generation Event (TGE) orchestration skill for Solana \u2014 tokenomics design, airdrop/merkle distribution, liquidity seeding, death-spiral detection, and post-launch monitoring.",
   "type": "module",
   "private": true,
   "license": "MIT",
@@ -13,9 +13,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/coverage-v8": "^3.2.6",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^3.2.6"
   },
   "engines": {
     "node": ">=20.0.0"

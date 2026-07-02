@@ -38,6 +38,15 @@ pub mod vesting_circuit_breaker {
         require!(watch_drawdown_ceiling_bps <= 10_000, VcbError::InvalidBps);
         require!(watch_tier_release_bps <= 10_000, VcbError::InvalidBps);
         require!(spiral_tier_release_bps <= 10_000, VcbError::InvalidBps);
+        // Worse market health must never release MORE than a milder tier —
+        // without this, a misconfigured gate (e.g. spiral_tier_release_bps=8000,
+        // watch_tier_release_bps=5000) would unlock a LARGER fraction of the
+        // scheduled amount during a spiral than during a mere watch state,
+        // which is exactly backwards from the entire purpose of this program.
+        require!(
+            spiral_tier_release_bps <= watch_tier_release_bps,
+            VcbError::InvalidTierOrdering
+        );
         require!(max_deferral_seconds > 0, VcbError::InvalidDeferralWindow);
 
         let gate = &mut ctx.accounts.gate;
@@ -255,6 +264,8 @@ pub enum VcbError {
     InvalidThresholdOrdering,
     #[msg("basis-point value must be <= 10000")]
     InvalidBps,
+    #[msg("spiral_tier_release_bps must be <= watch_tier_release_bps — a worse market tier cannot release more than a milder one")]
+    InvalidTierOrdering,
     #[msg("max_deferral_seconds must be positive")]
     InvalidDeferralWindow,
     #[msg("only the gate authority (Squads multisig) may evaluate the gate")]

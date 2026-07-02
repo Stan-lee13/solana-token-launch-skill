@@ -2,100 +2,24 @@
  * Regression tests — Tokenomics Simulation
  * Framework: Vitest
  *
- * Ensures the Python simulation output stays consistent across changes.
- * Runs the simulation via Node child_process and asserts key outputs.
+ * Two layers of protection:
+ *   1. Pure-logic tests against the TS mirror (fast, no subprocess).
+ *   2. A REAL cross-language parity check ("cross-language parity" describe
+ *      block below) that actually shells out to scripts/simulate_tokenomics.py
+ *      via node:child_process and diffs its --json output against the TS
+ *      mirror field-by-field. Previously this file's own docstring claimed to
+ *      do this ("Runs the simulation via Node child_process") but never
+ *      actually invoked the script — the TS mirror was silently only ever
+ *      checked against itself, so a Python/TS logic drift would have gone
+ *      undetected forever. This block is what makes that claim true.
  *
  * Run: npx vitest run tests/regression/tokenomics-simulation.test.ts
  */
 
 import { describe, it, expect } from "vitest";
-
-// ── TypeScript re-implementation of core simulation logic (for regression) ───
-// This mirrors scripts/simulate_tokenomics.py — if they diverge, tests fail
-
-interface SimConfig {
-  total_supply: number;
-  team_pct: number;
-  investors_pct: number;
-  community_pct: number;
-  treasury_pct: number;
-  liquidity_pct: number;
-  team_cliff_months: number;
-  team_vest_months: number;
-  investor_cliff_months: number;
-  investor_vest_months: number;
-  monthly_emission_pct: number;
-  monthly_protocol_revenue_usd: number;
-  token_price_usd: number;
-  fee_buyback_pct: number;
-  monthly_organic_demand_tokens: number;
-}
-
-interface MonthResult {
-  month: number;
-  circulating_supply: number;
-  cumulative_burned: number;
-  net_monthly_emission: number;
-  sell_pressure_usd: number;
-  demand_usd: number;
-  implied_price: number;
-}
-
-const DEFAULT_CONFIG: SimConfig = {
-  total_supply: 1_000_000_000,
-  team_pct: 0.15,
-  investors_pct: 0.10,
-  community_pct: 0.40,
-  treasury_pct: 0.20,
-  liquidity_pct: 0.15,
-  team_cliff_months: 12,
-  team_vest_months: 36,
-  investor_cliff_months: 6,
-  investor_vest_months: 24,
-  monthly_emission_pct: 0.005,
-  monthly_protocol_revenue_usd: 500_000,
-  token_price_usd: 1.0,
-  fee_buyback_pct: 0.50,
-  monthly_organic_demand_tokens: 2_000_000,
-};
-
-function simulate(config: SimConfig, months: number = 36): MonthResult[] {
-  const results: MonthResult[] = [];
-  let circulating = config.total_supply * config.liquidity_pct;
-  let burned = 0;
-
-  for (let month = 1; month <= months; month++) {
-    if (month > config.team_cliff_months) {
-      circulating += (config.total_supply * config.team_pct) / config.team_vest_months;
-    }
-    if (month > config.investor_cliff_months) {
-      circulating += (config.total_supply * config.investors_pct) / config.investor_vest_months;
-    }
-
-    const emission = config.total_supply * config.monthly_emission_pct;
-    circulating += emission;
-
-    const usd_for_buyback = config.monthly_protocol_revenue_usd * config.fee_buyback_pct;
-    const tokens_burned = usd_for_buyback / config.token_price_usd;
-    circulating -= tokens_burned;
-    burned += tokens_burned;
-
-    const net_monthly_emission = emission - tokens_burned;
-    const sell_pressure_usd = net_monthly_emission * config.token_price_usd;
-    const demand_usd = config.monthly_organic_demand_tokens * config.token_price_usd + usd_for_buyback;
-
-    results.push({
-      month,
-      circulating_supply: Math.round(circulating),
-      cumulative_burned: Math.round(burned),
-      net_monthly_emission: Math.round(net_monthly_emission),
-      sell_pressure_usd: Math.round(sell_pressure_usd),
-      demand_usd: Math.round(demand_usd),
-      implied_price: config.token_price_usd, // simplified (real sim adjusts dynamically)
-    });
-  }
-  return results;
-}
+import { execFileSync } from "node:child_process";
+import { resolve } from "node:path";
+import { simulate, DEFAULT_CONFIG, MonthResult } from "./tokenomics-simulation";
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 describe("tokenomics simulation", () => {
@@ -190,5 +114,47 @@ describe("tokenomics simulation", () => {
     expect(month12.cumulative_burned).toBe(3_000_000);
     expect(month12.circulating_supply).toBeGreaterThan(200_000_000);
     expect(month12.circulating_supply).toBeLessThan(400_000_000);
+  });
+});
+
+// ── Cross-language parity: TS mirror vs. real Python simulation ─────────────
+describe("cross-language parity (TS vs Python)", () => {
+  const PYTHON_SCRIPT = resolve(__dirname, "../../scripts/simulate_tokenomics.py");
+
+  function runPython(months: number): MonthResult[] {
+    const raw = execFileSync(
+      "python3",
+      [PYTHON_SCRIPT, "--json", "--months", String(months)],
+      { encoding: "utf-8", timeout: 15_000 }
+    );
+    return JSON.parse(raw) as MonthResult[];
+  }
+
+  it("Python script produces the same number of months as the TS mirror", () => {
+    const pyResults = runPython(36);
+    const tsResults = simulate(DEFAULT_CONFIG, 36);
+    expect(pyResults.length).toBe(tsResults.length);
+  });
+
+  it("every field matches exactly, month-by-month, over a 36-month horizon", () => {
+    const pyResults = runPython(36);
+    const tsResults = simulate(DEFAULT_CONFIG, 36);
+    for (let i = 0; i < tsResults.length; i++) {
+      const py = pyResults[i];
+      const ts = tsResults[i];
+      expect(py.month, `month index mismatch at row ${i}`).toBe(ts.month);
+      expect(py.circulating_supply, `circulating_supply diverged at month ${ts.month}`).toBe(ts.circulating_supply);
+      expect(py.cumulative_burned, `cumulative_burned diverged at month ${ts.month}`).toBe(ts.cumulative_burned);
+      expect(py.net_monthly_emission, `net_monthly_emission diverged at month ${ts.month}`).toBe(ts.net_monthly_emission);
+      expect(py.sell_pressure_usd, `sell_pressure_usd diverged at month ${ts.month}`).toBe(ts.sell_pressure_usd);
+      expect(py.demand_usd, `demand_usd diverged at month ${ts.month}`).toBe(ts.demand_usd);
+      expect(py.implied_price, `implied_price diverged at month ${ts.month}`).toBeCloseTo(ts.implied_price, 9);
+    }
+  });
+
+  it("month-12 snapshot matches between Python and TS (same values the TS-only snapshot test checks)", () => {
+    const pyResults = runPython(12);
+    const month12 = pyResults[11];
+    expect(month12.cumulative_burned).toBe(3_000_000);
   });
 });
